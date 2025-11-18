@@ -1,0 +1,211 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coffee Compass{% endblock %}</title>
+    <style>
+        :root {
+            --espresso: #4b2e2b;
+            --latte: #f1e3d3;
+            --foam: #fffaf4;
+            --accent: #d97941;
+            --slate: #1f1f1f;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(circle at top, #fff8ef, #f6efe8 45%, #efe2d5);
+            color: var(--slate);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .cc-shell {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 3vw, 2.5rem);
+        }
+        .site-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            padding: 1rem 1.5rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 20px 45px rgba(53, 34, 14, 0.08);
+            border: 1px solid rgba(75, 46, 43, 0.08);
+            position: sticky;
+            top: 1.5rem;
+            z-index: 10;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--espresso);
+        }
+        .logo-mark {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f2d6b3, #c18359);
+            border: 3px solid var(--espresso);
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+        .logo-text strong {
+            letter-spacing: 0.04em;
+        }
+        .logo-text span {
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #7a5a54;
+        }
+        .primary-nav {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: var(--espresso);
+            padding: 0.55rem 0.95rem;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .nav-link:hover,
+        .nav-link:focus-visible {
+            background: var(--latte);
+            color: var(--accent);
+        }
+        .nav-link.is-active {
+            background: var(--espresso);
+            color: white;
+            box-shadow: 0 8px 18px rgba(75, 46, 43, 0.25);
+        }
+        .cta-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .cta-link {
+            text-decoration: none;
+            padding: 0.55rem 1.1rem;
+            border-radius: 999px;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+        .cta-link.sign-in {
+            border-color: rgba(75, 46, 43, 0.4);
+            color: var(--espresso);
+        }
+        .cta-link.get-started {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 12px 25px rgba(217, 121, 65, 0.35);
+        }
+        main {
+            flex: 1;
+            width: 100%;
+        }
+        .page-surface {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 45px 80px rgba(31, 23, 20, 0.12);
+            padding: clamp(1.5rem, 4vw, 4rem);
+            margin-top: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        .page-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1.5rem;
+        }
+        .page-header h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 4vw, 2.7rem);
+            color: var(--espresso);
+        }
+        .page-header p {
+            margin: 0;
+            color: #6d554f;
+        }
+        .page-placeholder {
+            border: 2px dashed rgba(75, 46, 43, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            background: #fffaf4;
+            color: #6d554f;
+            font-size: 0.95rem;
+        }
+        @media (max-width: 768px) {
+            .site-header {
+                border-radius: 28px;
+                position: static;
+            }
+            .primary-nav {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .cta-group {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="cc-shell">
+        <header class="site-header" aria-label="Primary navigation">
+            <a class="logo" href="{% url 'home' %}">
+                <span class="logo-mark">CC</span>
+                <div class="logo-text">
+                    <strong>Coffee Compass</strong>
+                    <span>Every cup, mapped</span>
+                </div>
+            </a>
+            {% with current=request.resolver_match.url_name %}
+            <nav class="primary-nav">
+                <a href="{% url 'home' %}" class="nav-link{% if current == 'home' %} is-active{% endif %}">Home</a>
+                <a href="{% url 'places' %}" class="nav-link{% if current == 'places' %} is-active{% endif %}">Places</a>
+                <a href="{% url 'products' %}" class="nav-link{% if current == 'products' %} is-active{% endif %}">Products</a>
+                <a href="{% url 'saved' %}" class="nav-link{% if current == 'saved' %} is-active{% endif %}">Saved</a>
+                <a href="{% url 'blog' %}" class="nav-link{% if current == 'blog' %} is-active{% endif %}">Blog</a>
+                <a href="{% url 'help' %}" class="nav-link{% if current == 'help' %} is-active{% endif %}">Help</a>
+                <a href="{% url 'contact' %}" class="nav-link{% if current == 'contact' %} is-active{% endif %}">Contact</a>
+            </nav>
+            <div class="cta-group">
+                <a href="{% url 'signin' %}" class="cta-link sign-in{% if current == 'signin' %} is-active{% endif %}">Sign in</a>
+                <a href="{% url 'get_started' %}" class="cta-link get-started{% if current == 'get_started' %} is-active{% endif %}">Get started</a>
+            </div>
+            {% endwith %}
+        </header>
+        <main>
+            <div class="page-surface">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

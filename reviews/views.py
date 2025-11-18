@@ -1,13 +1,13 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import render   # ⬅️ ADD THIS
+from django.shortcuts import render
 from .models import Review, Favorite
 from .serializers import ReviewSerializer, FavoriteSerializer
 
 
-def home(request):                     # ⬅️ ADD THIS
-    return render(request, "reviews/home.html")
+def home(request):
+    return render(request, "home.html")
 
 
 @api_view(["GET"])
