@@ -1,3 +1,7 @@
 from django.urls import path
-from .views import recommend
-urlpatterns = [ path("", recommend) ]  # POST /api/recommendations
+from .import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('shops/', views.shops, name='places'),
+]

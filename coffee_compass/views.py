@@ -6,7 +6,7 @@ def home(request):
 
 
 def places(request):
-    return render(request, "pages/places.html")
+    return render(request, "places.html")
 
 
 def products(request):

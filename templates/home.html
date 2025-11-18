@@ -1,13 +1,82 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coffee Corner{% endblock %}</title>
 
-{% block title %}Coffee Compass — Home{% endblock %}
+    
+<nav class="navbar">
+    <div class="logo">Coffee Corner</div>
+    <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'places' %}">Browse</a>
+        <a href="#">Favorites</a>
+        <a href="#">Journal</a>
+        <a href="#">About</a>
+        
+    </div>
+</nav>
 
-{% block extra_head %}
 <style>
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--foam);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.navbar .logo {
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: var(--espresso);
+}
+
+.navbar .nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.navbar .nav-links a {
+    text-decoration: none;
+    color: var(--espresso);
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.navbar .nav-links a:hover {
+    background: var(--accent);
+    color: white;
+}
+</style>
+
+
+<style>
+    :root {
+    --espresso: #4b2e2b; /* dark brown */
+    --accent: #d97941;   /* orange-ish highlight */
+    --foam: #f4ede8;     /* light beige */
+    }
+
+    body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background: #fff;
+        margin: 0;
+        padding: 0;
+    }
+
     .hero-grid {
         display: grid;
         gap: 1.25rem;
         max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem;
+        text-align: center;
     }
     .hero-eyebrow {
         font-size: 0.85rem;
@@ -27,8 +96,10 @@
     }
     .hero-actions {
         display: flex;
+        justify-content: center; /* center buttons */
         flex-wrap: wrap;
         gap: 0.75rem;
+        margin-top: 1.5rem;
     }
     .hero-actions button {
         border: none;
@@ -50,6 +121,7 @@
     }
     .quick-prompts {
         display: flex;
+        justify-content: center; /* center buttons */
         flex-wrap: wrap;
         gap: 0.65rem;
         margin-top: 1.5rem;
@@ -63,13 +135,14 @@
         font-size: 0.9rem;
     }
 </style>
-{% endblock %}
+
+
 
 {% block content %}
 <section class="hero-grid">
     <p class="hero-eyebrow">Launching soon</p>
     <h1>Map every memorable cup.</h1>
-    <p>Drop in the copy, imagery, and data wherever you like—Coffee Compass keeps the experience consistent while you explore.</p>
+    <p>Drop in the copy, imagery, and data wherever you like—Coffee Corner keeps the experience consistent while you explore.</p>
     <div class="hero-actions">
         <button class="primary" type="button">Recommend a shop</button>
         <button class="secondary" type="button">Browse places</button>
