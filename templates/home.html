@@ -1,11 +1,84 @@
-<!-- reviews/templates/reviews/home.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Coffee Compass</title>
-</head>
-<body>
-    <!-- Blank home page for now -->
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Coffee Compass — Home{% endblock %}
+
+{% block extra_head %}
+<style>
+    .hero-grid {
+        display: grid;
+        gap: 1.25rem;
+        max-width: 720px;
+    }
+    .hero-eyebrow {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        color: #a18980;
+    }
+    .hero-grid h1 {
+        margin: 0;
+        font-size: clamp(2.2rem, 6vw, 3.4rem);
+        color: var(--espresso);
+    }
+    .hero-grid p {
+        margin: 0;
+        color: #5a4641;
+        font-size: 1.05rem;
+    }
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .hero-actions button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .hero-actions .primary {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 20px 30px rgba(217, 121, 65, 0.35);
+    }
+    .hero-actions .secondary {
+        background: transparent;
+        border: 1px solid rgba(75, 46, 43, 0.3);
+        color: var(--espresso);
+    }
+    .quick-prompts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 1.5rem;
+    }
+    .quick-prompts button {
+        border-radius: 999px;
+        padding: 0.55rem 1rem;
+        border: 1px solid rgba(75, 46, 43, 0.15);
+        background: var(--foam);
+        color: var(--espresso);
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-grid">
+    <p class="hero-eyebrow">Launching soon</p>
+    <h1>Map every memorable cup.</h1>
+    <p>Drop in the copy, imagery, and data wherever you like—Coffee Compass keeps the experience consistent while you explore.</p>
+    <div class="hero-actions">
+        <button class="primary" type="button">Recommend a shop</button>
+        <button class="secondary" type="button">Browse places</button>
+    </div>
+    <div class="quick-prompts" aria-label="Quick mood prompts">
+        <button type="button">Cozy vanilla study</button>
+        <button type="button">Quick pick-me-up</button>
+        <button type="button">Remote work vibes</button>
+        <button type="button">Seasonal treats</button>
+    </div>
+</section>
+{% endblock %}
