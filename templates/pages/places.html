@@ -1,4 +1,4 @@
-{% block content %}
+
 
 <div class="places-container">
     <div id="map" class="map-section"></div>
@@ -76,13 +76,16 @@ window.onload = initMap;
 </script>
 
 <!-- Shop cards on the right with heart icon fingers crossed-->
+ <a href = "{% url 'shop_detail' shop.id %}" class = "shop-card-link">
  <div class="shop-card">
     <div class="shop-info">
-        <h2>Star Coffee</h2>
-        <p>0.5 miles away</p>
+        <h2>{{ shop.name }}</h2>
+        <p>{{ shop.distance }} miles away</p>
     </div>
     <button class="favorite-heart">♥</button>
 </div>
+</a>
+
 <!-- With style points!!!!-->
  <style>
 .shop-card {
@@ -118,4 +121,11 @@ window.onload = initMap;
 .favorite-heart:hover {
     transform: scale(1.2);
 }
+
+.shop-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
 </style>
+
