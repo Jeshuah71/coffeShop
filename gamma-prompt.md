@@ -22,3 +22,10 @@ Each slide should:
 - Reserve space for speaker notes summarizing the key talking point per slide.
 
 Do not fabricate data beyond what’s implied; if something is incomplete, phrase it as “in progress” with next steps. Ensure the narrative focuses on **how we think and design**, not just the finished product.***
+
+---
+
+### Collaboration Plan (for slide notes & speaker narration)
+- **Division of work:** Teammate A (friend) owns the first four nav pages (Home, Places, Products, Saved). Teammate B (me) owns the remaining four (Blog, Help, Contact, Auth flows). Each person builds their templates/components while reusing the shared `base.html` shell so navigation persists.
+- **Workflow:** Use separate Git branches (e.g., `feature/nav-first-half`, `feature/nav-second-half`). Commit page-level changes independently, then merge into `main` via pull requests.
+- **Combining changes:** Before final merge, both developers pull latest `main`, resolve any template conflicts (mostly in shared `base.html` or CSS), and run `python manage.py check` plus a manual click-through to confirm all eight routes render with the nav intact. Finish with a final PR summarizing the combined UI work so the presentation/demo can show the unified experience.
