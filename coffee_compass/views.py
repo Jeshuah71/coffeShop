@@ -6,7 +6,8 @@ def home(request):
 
 
 def places(request):
-    return render(request, "places.html")
+    # Point to the namespaced template under templates/pages
+    return render(request, "pages/places.html")
 
 
 def products(request):

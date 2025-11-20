@@ -1,7 +1,7 @@
 from django.urls import path
-from .import views
+from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('shops/', views.shops, name='places'),
+    # POST /api/recommendations/ to get ranked shops based on prompt text
+    path("", views.recommend, name="recommend"),
 ]
