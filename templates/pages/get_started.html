@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Coffee Corner — Get started{% endblock %}
+{% block title %}Coffee Corner - Get started{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1>Get started</h1>
-    <p>Create an account so you can publish posts and keep a personal journal.</p>
+    <p>Create an account so you can publish posts, save shops, and keep a personal journal.</p>
 </div>
-<div class="page-placeholder">
-    Placeholder for onboarding steps and sign-up form call-to-action.
+<div class="auth-card" style="max-width:520px;">
+    <p style="margin:0 0 0.6rem;">Ready to join? Sign up to sync favorites and post journals.</p>
+    <a class="btn btn-primary" href="{% url 'signup_page' %}">Sign up</a>
+    <p class="subtle" style="margin:0.6rem 0 0;">Already have an account? <a href="{% url 'signin' %}">Sign in</a></p>
 </div>
 {% endblock %}

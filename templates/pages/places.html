@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Coffee Corner — Places{% endblock %}
+{% block title %}Coffee Corner - Places{% endblock %}
 
 {% block extra_head %}
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
 <style>
     .places-layout {
         display: grid;
@@ -32,54 +33,11 @@
         position: relative;
         margin-top: 1rem;
         border-radius: 18px;
-        border: 1px dashed rgba(255,255,255,0.16);
-        min-height: 320px;
+        min-height: 340px;
         overflow: hidden;
-    }
-    .map-viewport::before,
-    .map-viewport::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-        background-size: 80px 80px;
-        pointer-events: none;
-    }
-    .map-pin {
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        border: 2px solid #fff;
-        background: #d46b42;
-        box-shadow: 0 12px 22px rgba(0,0,0,0.35);
-    }
-    .map-label {
-        position: absolute;
-        left: 14px;
-        top: 14px;
-        background: rgba(255,255,255,0.96);
-        color: #2e1f1c;
-        padding: 0.85rem 1rem;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-        min-width: 200px;
-        box-shadow: 0 16px 28px rgba(12,7,5,0.2);
-    }
-    .map-label h3 {
-        margin: 0 0 0.25rem;
-        font-size: 1.02rem;
-    }
-    .map-legend {
-        position: absolute;
-        right: 14px;
-        bottom: 14px;
-        background: rgba(255,255,255,0.9);
-        color: #2e1f1c;
-        padding: 0.8rem 1rem;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        font-size: 0.95rem;
+        border: 1px solid rgba(255,255,255,0.18);
+        box-shadow: 0 18px 32px rgba(0,0,0,0.22);
+        height: 520px;
     }
     .list-panel {
         border: 1px solid var(--border);
@@ -186,23 +144,25 @@
 {% block content %}
 <div class="page-header">
     <h1>Places</h1>
-    <p>Immediate, mockup-ready view of the map and nearby shops. No API keys required for the preview.</p>
+    <p>Find nearby cafes, filter by vibe, and save favorites. Uses live Google Maps with your API key.</p>
 </div>
 
 <div class="places-layout">
     <section class="map-panel" aria-label="Map preview">
-        <h2>Live preview</h2>
+        <h2>Live map</h2>
         <p>Geolocation aware when permitted; otherwise seeded with sample pins.</p>
-        <div class="map-viewport" data-map>
-            <div class="map-label">
-                <div class="eyebrow">Open now</div>
-                <h3>The Lantern</h3>
-                <p class="subtle" style="margin:0;">Light roast flights · 8 min walk · patio</p>
+        <div class="map-viewport">
+            {% if google_maps_api_key %}
+            <gmpx-api-loader key="{{ google_maps_api_key }}" solution-channel="GMP_CC_places"></gmpx-api-loader>
+            <gmp-map id="places-map" map-id="e42fe096fceb3f06ecd9be25" center="37.7749,-122.4194" zoom="12" style="height:340px; width:100%; border:0;">
+                <gmp-advanced-marker></gmp-advanced-marker>
+            </gmp-map>
+            <div style="position:absolute; top:10px; left:10px; right:10px; display:flex; gap:0.5rem; pointer-events:none;">
+                <gmpx-place-picker style="flex:1;" placeholder="Search by address or area"></gmpx-place-picker>
             </div>
-            <div class="map-legend">
-                <strong>Priority</strong>
-                <span class="subtle">Quiet · Wi-Fi · Seats</span>
-            </div>
+            {% else %}
+            <div style="padding:1rem; color:#fff;">Google Maps key not configured.</div>
+            {% endif %}
         </div>
     </section>
 
@@ -237,24 +197,41 @@
     const emptyEl = document.querySelector("[data-empty]");
     const searchEl = document.querySelector("[data-search]");
     const tags = Array.from(document.querySelectorAll("[data-tag]"));
-    const mapEl = document.querySelector("[data-map]");
+    const gmpMapEl = document.getElementById("places-map");
+    let markerLayer = [];
 
     let shops = [...fallback];
     let currentTag = "all";
+    const googlePlaces = {
+        service: null,
+        map: null,
+    };
+
+    function getGmpMap() {
+        if (!gmpMapEl || !window.google) return null;
+        return gmpMapEl.innerMap || null;
+    }
 
     function renderPins(list) {
-        if (!mapEl) return;
-        mapEl.querySelectorAll(".map-pin").forEach(p => p.remove());
-        const area = mapEl.getBoundingClientRect();
-        list.slice(0, 5).forEach((_, idx) => {
-            const pin = document.createElement("div");
-            pin.className = "map-pin";
-            const x = 20 + (idx * 20);
-            const y = 18 + (idx * 12);
-            pin.style.left = `${12 + x}%`;
-            pin.style.top = `${22 + y / 3}%`;
-            mapEl.appendChild(pin);
+        const map = getGmpMap();
+        if (!map) return;
+        markerLayer.forEach(m => m.setMap(null));
+        markerLayer = [];
+        const bounds = new google.maps.LatLngBounds();
+        list.slice(0,5).forEach(item => {
+            const { lat, lng } = item;
+            if (typeof lat !== "number" || typeof lng !== "number") return;
+            const marker = new google.maps.marker.AdvancedMarkerElement({
+                map,
+                position: {lat, lng},
+                title: item.name || "Coffee shop",
+            });
+            markerLayer.push(marker);
+            bounds.extend(marker.position);
         });
+        if (!bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
     }
 
     function render(list) {
@@ -270,22 +247,24 @@
             card.className = "shop-card";
             card.innerHTML = `
                 <div>
-                    <h3>${item.name}</h3>
-                    <p>${item.note}</p>
+                    <h3>${item.name || "Coffee shop"}</h3>
+                    <p>${item.note || item.address || "Nearby good coffee"}</p>
                     <div class="shop-meta">
-                        <span>${item.distance}</span>
-                        <span>•</span>
-                        <span>${item.tags.join(", ")}</span>
+                        <span>${item.distance || ""}</span>
+                        ${item.tags && item.tags.length ? `<span>•</span><span>${item.tags.join(", ")}</span>` : ""}
                     </div>
                 </div>
                 <div class="shop-actions">
-                    <button class="mini-btn" type="button">Save</button>
-                    <button class="mini-btn" type="button">Details</button>
+                    <button class="mini-btn" type="button" data-save="${item.id || item.place_id || ''}">Save</button>
+                    <button class="mini-btn" type="button" onclick="window.location.href='${item.details_link || '/places/?q=' + encodeURIComponent(item.name || '')}'">Details</button>
                 </div>
             `;
             cardsEl.appendChild(card);
         });
         renderPins(list);
+        cardsEl.querySelectorAll("[data-save]").forEach(btn => {
+            btn.addEventListener("click", () => saveFavorite(btn.dataset.save, btn));
+        });
     }
 
     function applyFilters() {
@@ -305,17 +284,37 @@
     }
 
     async function fetchLive() {
+        const params = new URLSearchParams();
+        const term = (searchEl.value || "").trim();
+        if (term) params.set("query", term);
+        if (currentTag !== "all") params.append("tags", currentTag);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                params.set("lat", pos.coords.latitude);
+                params.set("lon", pos.coords.longitude);
+                runFetch(params);
+            }, () => runFetch(params));
+        } else {
+            runFetch(params);
+        }
+    }
+
+    async function runFetch(params) {
         try {
-            const res = await fetch("/api/shops/");
+            const res = await fetch("/api/shops/?" + params.toString());
             if (!res.ok) throw new Error("Request failed");
             const data = await res.json();
             if (Array.isArray(data) && data.length) {
                 shops = data.map(s => ({
+                    id: s.id,
                     name: s.name || "Coffee shop",
-                    distance: s.address || "Nearby",
-                    tags: Array.isArray(s.tags) ? s.tags : [],
+                    distance: s.distance_km ? `${s.distance_km.toFixed(1)} km` : (s.address || "Nearby"),
+                    tags: Array.isArray(s.tags) ? s.tags : (s.tags ? s.tags.split(",").map(t=>t.trim()) : []),
                     note: s.hours || "Hours not listed",
                     mood: (Array.isArray(s.tags) && s.tags[0]) || "remote",
+                    lat: s.lat !== null && s.lat !== undefined ? parseFloat(s.lat) : null,
+                    lng: s.lon !== null && s.lon !== undefined ? parseFloat(s.lon) : null,
+                    address: s.address || ""
                 }));
             }
         } catch (err) {
@@ -326,11 +325,121 @@
     }
 
     tags.forEach(btn => btn.addEventListener("click", () => setActiveTag(btn.dataset.tag)));
-    searchEl.addEventListener("input", applyFilters);
+    searchEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); searchGooglePlaces(); }});
     const refresh = document.querySelector("[data-refresh]");
-    if (refresh) refresh.addEventListener("click", fetchLive);
+    if (refresh) refresh.addEventListener("click", searchGooglePlaces);
+
+    function saveToLocal(place) {
+        const key = "savedPlaces";
+        const existing = JSON.parse(localStorage.getItem(key) || "[]");
+        const exists = existing.find(p => p.place_id === place.place_id);
+        if (!exists) {
+            existing.push(place);
+            localStorage.setItem(key, JSON.stringify(existing));
+        }
+    }
+
+    async function saveFavorite(shopId, btn) {
+        if (!shopId) return alert("This shop cannot be saved right now.");
+        try {
+            const resp = await fetch("/api/reviews/favorites/add", {
+                method:"POST",
+                headers: {
+                    "Content-Type":"application/json",
+                    "X-CSRFToken": window.getCsrfToken ? window.getCsrfToken() : ""
+                },
+                body: JSON.stringify({shop: shopId})
+            });
+            if (resp.status === 401 || resp.status === 403) {
+                alert("Please sign in to save favorites.");
+                window.location.href = "/signin/";
+                return;
+            }
+            if (!resp.ok) throw new Error();
+            alert("Saved! Check the Saved page.");
+        } catch (e) {
+            const place = shops.find(s => (s.id || s.place_id) == shopId);
+            if (place && place.place_id) {
+                saveToLocal(place);
+                alert("Saved locally. Sign in to sync to your account.");
+            } else {
+                alert("Could not save right now. Try again.");
+            }
+        }
+    }
+
+    function initMapWithGeo() {
+        if (!navigator.geolocation) { renderPins(fallback); return; }
+        navigator.geolocation.getCurrentPosition(pos => {
+            const map = getGmpMap();
+            if (map) {
+                map.setCenter({lat: pos.coords.latitude, lng: pos.coords.longitude});
+                map.setZoom(13);
+                if (!googlePlaces.service) {
+                    googlePlaces.map = map;
+                    googlePlaces.service = new google.maps.places.PlacesService(map);
+                }
+            }
+        }, () => {
+            const map = getGmpMap();
+            if (map) {
+                map.setCenter({lat: 37.7749, lng: -122.4194});
+                map.setZoom(12);
+                if (!googlePlaces.service) {
+                    googlePlaces.map = map;
+                    googlePlaces.service = new google.maps.places.PlacesService(map);
+                }
+            }
+        });
+    }
+
+    function searchGooglePlaces() {
+        const map = getGmpMap();
+        if (!map || !window.google || !google.maps.places) { fetchLive(); return; }
+        if (!googlePlaces.service) {
+            googlePlaces.map = map;
+            googlePlaces.service = new google.maps.places.PlacesService(map);
+        }
+        const query = (searchEl.value || "").trim();
+        const queryText = query ? `coffee in ${query}` : "coffee";
+        const request = {
+            query: queryText,
+            type: "cafe",
+            fields: ["name","formatted_address","geometry","place_id","rating","user_ratings_total"]
+        };
+        const center = map.getCenter();
+        if (center) {
+            request.location = center;
+            request.radius = 30000;
+        }
+        googlePlaces.service.textSearch(request, (results, status) => {
+            if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
+                fetchLive();
+                return;
+            }
+            shops = results.slice(0, 15).map(r => ({
+                id: null,
+                name: r.name,
+                address: r.formatted_address || "",
+                note: `Rating ${r.rating || "N/A"} (${r.user_ratings_total || 0} reviews)`,
+                tags: [],
+                distance: "",
+                lat: r.geometry && r.geometry.location ? r.geometry.location.lat() : null,
+                lng: r.geometry && r.geometry.location ? r.geometry.location.lng() : null,
+                place_id: r.place_id,
+                details_link: r.place_id ? `https://www.google.com/maps/place/?q=place_id:${r.place_id}` : "#"
+            }));
+            applyFilters();
+            const bounds = new google.maps.LatLngBounds();
+            results.forEach(r => {
+                if (r.geometry && r.geometry.location) bounds.extend(r.geometry.location);
+            });
+            if (!bounds.isEmpty()) { map.fitBounds(bounds); }
+        });
+    }
 
     renderPins(fallback);
+    initMapWithGeo();
     fetchLive();
 })();
 </script>

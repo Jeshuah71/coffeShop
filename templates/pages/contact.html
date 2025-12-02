@@ -1,13 +1,261 @@
 {% extends "base.html" %}
 
-{% block title %}Coffee Corner — Contact{% endblock %}
+{% block title %}Coffee Corner - Contact{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Contact</h1>
-    <p>Send the team a note about concerns or feedback.</p>
-</div>
-<div class="page-placeholder">
-    Placeholder for contact form, support email, and success state.
-</div>
+<section class="contact-hero cc-shell">
+    <div class="eyebrow">Contact</div>
+    <h1>We'd love to hear from you</h1>
+    <p class="lede">Questions, feedback, or a new coffee spot to feature? Send us a note and the Coffee Corner crew will reply within one business day.</p>
+    <div class="contact-meta">
+        <span class="pill">Response time: 24 hours</span>
+        <span class="pill">Support hours: 9am-6pm Mountain Time</span>
+    </div>
+</section>
+
+<section class="contact-grid cc-shell">
+    <div class="contact-card form-card">
+        <div class="card-header">
+            <div>
+                <p class="eyebrow">Send a message</p>
+                <h2>Tell us what’s on your mind</h2>
+                <p class="hint">All fields marked * are required.</p>
+            </div>
+            <div class="card-icon">✉️</div>
+        </div>
+        <form class="contact-form" method="post" action="#">
+            <div class="form-row">
+                <label for="name">Full name *</label>
+                <input id="name" name="name" type="text" placeholder="Jamie Barista" required>
+            </div>
+            <div class="form-row">
+                <label for="email">Email *</label>
+                <input id="email" name="email" type="email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-row">
+                <label for="topic">Topic *</label>
+                <select id="topic" name="topic" required>
+                    <option value="" disabled selected>Select a topic</option>
+                    <option value="question">Questions about the app</option>
+                    <option value="suggestion">Feature request or suggestion</option>
+                    <option value="bug">Bug report</option>
+                    <option value="partnership">Partnerships / media</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" rows="5" placeholder="How can we help?" required></textarea>
+            </div>
+            <div class="form-actions">
+                <label class="checkbox">
+                    <input type="checkbox" name="newsletter">
+                    <span>Send me occasional Coffee Corner updates</span>
+                </label>
+                <button type="submit" class="btn btn-primary">Send message</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="contact-card side-card">
+        <p class="eyebrow">Prefer email?</p>
+        <h3>Drop us a line</h3>
+        <div class="contact-links">
+            <div>
+                <p class="label">Support & questions</p>
+                <a href="mailto:support@coffeecorner.app" class="link">support@coffeecorner.app</a>
+            </div>
+            <div>
+                <p class="label">Partnerships & press</p>
+                <a href="mailto:hello@coffeecorner.app" class="link">hello@coffeecorner.app</a>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <p class="eyebrow">Need quick help?</p>
+        <ul class="quick-help">
+            <li>Check <a href="/help">Help Center</a> for troubleshooting</li>
+            <li>Suggest a shop directly on the <a href="/places">Places</a> page</li>
+            <li>Track releases in our <a href="/blog">Product updates</a></li>
+        </ul>
+        <div class="success-hint">
+            <strong>What happens next?</strong>
+            <p>We'll confirm receipt immediately and follow up with a human reply. If you don’t hear back within a day, check your spam folder or email us directly.</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .contact-hero {
+        padding: 3rem 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    .contact-hero h1 {
+        margin: 0;
+        font-size: clamp(2.1rem, 3vw, 2.6rem);
+        letter-spacing: -0.02em;
+    }
+    .contact-hero .lede {
+        max-width: 720px;
+        color: #4c3a32;
+        margin: 0;
+        font-size: 1.05rem;
+    }
+    .contact-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.25rem;
+    }
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr;
+        gap: 1.5rem;
+        padding-bottom: 3rem;
+    }
+    .contact-card {
+        background: rgba(255,255,255,0.9);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: clamp(1.2rem, 2vw, 1.6rem);
+        box-shadow: 0 18px 40px rgba(53, 34, 14, 0.08);
+    }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .card-header h2 {
+        margin: 0.2rem 0 0;
+        font-size: 1.4rem;
+        letter-spacing: -0.01em;
+    }
+    .card-icon {
+        width: 56px;
+        height: 56px;
+        display: grid;
+        place-items: center;
+        background: var(--foam);
+        border-radius: 16px;
+        border: 1px solid rgba(75, 46, 43, 0.12);
+        font-size: 1.35rem;
+    }
+    .hint {
+        color: #6d5248;
+        margin: 0.2rem 0 0;
+    }
+    .contact-form {
+        display: grid;
+        gap: 0.9rem;
+    }
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+    .form-row label {
+        font-weight: 600;
+        color: #3c2a24;
+    }
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(75, 46, 43, 0.18);
+        padding: 0.85rem 1rem;
+        font-size: 1rem;
+        background: #fffaf4;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-row textarea {
+        resize: vertical;
+        min-height: 140px;
+    }
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--glow);
+    }
+    .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.3rem;
+    }
+    .checkbox {
+        display: inline-flex;
+        gap: 0.5rem;
+        align-items: center;
+        font-size: 0.95rem;
+        color: #4c3a32;
+    }
+    .checkbox input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent);
+    }
+    .side-card h3 {
+        margin: 0.2rem 0 0.6rem;
+        font-size: 1.25rem;
+    }
+    .contact-links {
+        display: grid;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .contact-links .label {
+        margin: 0 0 0.1rem;
+        color: #6b5247;
+        font-weight: 600;
+    }
+    .contact-links .link {
+        text-decoration: none;
+        color: var(--espresso);
+        font-weight: 600;
+    }
+    .contact-links .link:hover {
+        color: var(--accent);
+    }
+    .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 1rem 0;
+    }
+    .quick-help {
+        margin: 0 0 1rem 0;
+        padding-left: 1.1rem;
+        color: #4c3a32;
+        display: grid;
+        gap: 0.4rem;
+    }
+    .quick-help a {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .success-hint {
+        background: #fff7ef;
+        border-radius: 16px;
+        border: 1px solid rgba(75, 46, 43, 0.16);
+        padding: 0.9rem 1rem;
+        color: #3f2b25;
+    }
+    .success-hint p {
+        margin: 0.35rem 0 0;
+        color: #5c453d;
+    }
+    @media (max-width: 900px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}

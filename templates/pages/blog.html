@@ -1,13 +1,109 @@
 {% extends "base.html" %}
 
-{% block title %}Coffee Corner — Blog{% endblock %}
+{% block title %}Coffee Corner - Coffee Stream{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>Journal</h1>
-    <p>Announcements, tips, and seasonal features will live here.</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:0.8rem;">
+        <div>
+    <h1>Coffee Stream</h1>
+    <p style="margin:0;">Scroll a social feed of nearby cafes: like, comment, and repost your favorites.</p>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-ghost" type="button" id="auth-toggle">Sign in</button>
+            <button class="btn btn-primary" type="button" id="create-post">Create post</button>
+        </div>
+    </div>
 </div>
-<div class="page-placeholder">
-    Placeholder for search, filters, post cards, and pagination.
-</div>
+<div id="coffee-feed" class="feed-grid"></div>
+<div class="empty-state" id="feed-empty" style="display:none;">No posts yet. Check back soon.</div>
+
+<style>
+    .feed-grid { display: grid; gap: 1rem; }
+    .feed-card {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 18px 36px rgba(31,23,20,0.08);
+    }
+    .feed-media img {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+        max-height: 320px;
+    }
+    .feed-body { padding: 0.9rem 1rem; }
+    .feed-head { display:flex; align-items:center; gap:0.6rem; margin-bottom:0.4rem; }
+    .avatar {
+        width: 42px; height: 42px; border-radius: 50%; object-fit: cover;
+        border: 1px solid var(--border); background:#fffaf4;
+    }
+    .actions { display:flex; gap:0.7rem; margin-top:0.6rem; }
+    .chip {
+        background: var(--foam);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        font-weight: 600;
+        color: var(--espresso);
+    }
+</style>
+
+<script>
+(function(){
+    const feed = [
+        { user:"Amelia", handle:"@amelia.brews", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80", shop:"Sunrise Roasters", text:"Sunny cortado break. Quiet corners, strong Wi‑Fi.", tags:["wifi","cortado"], img:"https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80" },
+        { user:"Miles", handle:"@milesfilter", avatar:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80", shop:"Third Rail", text:"Late-night flat white, lo-fi playlist.", tags:["late","flat white"], img:"https://images.unsplash.com/photo-1461988625982-7e46a099bf4e?auto=format&fit=crop&w=1200&q=80" },
+        { user:"Rae", handle:"@raemocha", avatar:"https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=80", shop:"Lantern Cafe", text:"Window seat, mellow latte art practice.", tags:["cozy","latte"], img:"https://images.unsplash.com/photo-1462917882517-e150004895fa?auto=format&fit=crop&w=1200&q=80" }
+    ];
+    const loggedIn = false; // placeholder; replace with real auth state
+    const container = document.getElementById("coffee-feed");
+    const authToggle = document.getElementById("auth-toggle");
+    const createBtn = document.getElementById("create-post");
+    authToggle.textContent = loggedIn ? "Log out" : "Sign in";
+    authToggle.addEventListener("click", () => {
+        if(loggedIn){
+            // placeholder for logout
+            alert("Logging out (placeholder).");
+        } else {
+            window.location.href = "/signin/";
+        }
+    });
+    createBtn.addEventListener("click", () => {
+        if(!loggedIn){
+            alert("Please sign in to create a post.");
+            window.location.href = "/signin/";
+            return;
+        }
+        alert("Open create-post modal (placeholder).");
+    });
+
+    if(!feed.length){ document.getElementById("feed-empty").style.display="block"; return; }
+    feed.forEach(post => {
+        const card = document.createElement("article");
+        card.className = "feed-card";
+        card.innerHTML = `
+            <div class="feed-media"><img src="${post.img}" alt="${post.shop}"></div>
+            <div class="feed-body">
+                <div class="feed-head">
+                    <img class="avatar" src="${post.avatar}" alt="${post.user}">
+                    <div><strong>${post.user}</strong><div class="subtle">${post.handle}</div></div>
+                </div>
+                <div class="chip">${post.shop}</div>
+                <p style="margin:0.35rem 0 0.4rem;">${post.text}</p>
+                <div class="subtle" style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                    ${post.tags.map(t=>`<span>#${t}</span>`).join("")}
+                </div>
+                <div class="actions">
+                    <button class="mini-btn" type="button">♥ Like</button>
+                    <button class="mini-btn" type="button">💬 Comment</button>
+                    <button class="mini-btn" type="button">↻ Repost</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+})();
+</script>
 {% endblock %}

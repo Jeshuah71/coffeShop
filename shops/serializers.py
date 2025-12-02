@@ -8,7 +8,8 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 class CoffeeShopSerializer(serializers.ModelSerializer):
     menu_items = MenuItemSerializer(many=True, read_only=True)
+    distance_km = serializers.FloatField(read_only=True)
+    review_count = serializers.IntegerField(source="rating_count", read_only=True)
     class Meta:
         model = CoffeeShop
-        fields = ["id","name","address","lat","lon","price_level","avg_rating","hours","tags","menu_items"]
-
+        fields = ["id","name","address","lat","lon","price_level","avg_rating","review_count","hours","tags","distance_km","menu_items"]

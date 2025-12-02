@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Coffee Corner - Catbot{% endblock %}
+
+{% block extra_head %}
+<style>
+.chat-shell {border:1px solid var(--border);border-radius:20px;background:#fffaf4;padding:1rem;box-shadow:0 18px 32px rgba(31,23,20,0.1);}
+.chat-log {max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem;padding:0.5rem;}
+.bubble {padding:0.75rem 0.9rem;border-radius:16px;max-width:80%;}
+.bubble.cat {background:#0f0a05;color:#fff;margin-right:auto;}
+.bubble.user {background:#fff;border:1px solid var(--border);margin-left:auto;}
+.chat-input {display:flex;gap:0.6rem;margin-top:0.8rem;}
+.chat-input input {flex:1;padding:0.75rem 0.9rem;border-radius:12px;border:1px solid var(--border);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Ask the Catbot</h1>
+    <p>Chat with our coffee-loving cat for quick tips.</p>
+</div>
+<div class="chat-shell" id="catbot">
+    <div class="chat-log" id="chat-log">
+        <div class="bubble cat">Meow! Ask me anything about coffee or Coffee Compass.</div>
+    </div>
+    <div class="chat-input">
+        <input id="chat-input" type="text" placeholder="Ask about shops, brewing, or the journal...">
+        <button class="btn btn-primary" id="chat-send">Ask</button>
+    </div>
+</div>
+<script>
+const log = document.getElementById("chat-log");
+const input = document.getElementById("chat-input");
+document.getElementById("chat-send").addEventListener("click", sendMessage);
+input.addEventListener("keydown", e => { if(e.key==="Enter"){ sendMessage(); }});
+
+function appendBubble(text, who){
+    const div = document.createElement("div");
+    div.className = "bubble "+who;
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+}
+
+async function sendMessage(){
+    const text = input.value.trim();
+    if(!text) return;
+    appendBubble(text, "user");
+    input.value = "";
+    const resp = await fetch("/api/recommendations/catbot", {
+        method:"POST",
+        headers:{"Content-Type":"application/json","X-CSRFToken":getCsrfToken()},
+        body: JSON.stringify({message:text})
+    });
+    const data = await resp.json();
+    appendBubble(data.reply || "The cat is asleep...", "cat");
+}
+</script>
+{% endblock %}

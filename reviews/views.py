@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from django.shortcuts import render
 from .models import Review, Favorite
 from .serializers import ReviewSerializer, FavoriteSerializer
+from shops.models import CoffeeShop
+from accounts.models import Profile
 
 
 def home(request):
@@ -23,7 +25,11 @@ def list_reviews(request):
 def create_review(request):
     ser = ReviewSerializer(data=request.data)
     if ser.is_valid():
-        ser.save(user=request.user)
+        review = ser.save(user=request.user)
+        try:
+            review.shop.update_rating(review.rating)
+        except CoffeeShop.DoesNotExist:
+            pass
         return Response(ser.data, status=201)
     return Response(ser.errors, status=400)
 
@@ -42,6 +48,8 @@ def add_favorite(request):
             user=request.user, 
             shop=ser.validated_data["shop"]
         )
+        if created:
+            Profile.objects.get_or_create(user=request.user)[0].increment_favorite()
         return Response(
             FavoriteSerializer(fav).data, 
             status=201 if created else 200

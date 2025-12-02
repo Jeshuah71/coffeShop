@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   web:
     build:
@@ -28,7 +28,6 @@ services:
         condition: service_healthy
     env_file: .env
     environment:
-      # Also export libpq variables so the driver always has a password
       PGUSER: ${POSTGRES_USER}
       PGPASSWORD: ${POSTGRES_PASSWORD}
       PGHOST: ${POSTGRES_HOST}

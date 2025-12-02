@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Coffee Corner - Journal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Journal</h1>
+    <p>Log your visits: where you went, what you sipped, notes, and photos. Save privately or share publicly. Sign in required to post.</p>
+</div>
+
+<div class="journal-layout">
+    <section class="journal-form-card">
+        <div class="eyebrow">New entry</div>
+        <form id="journal-form" enctype="multipart/form-data">
+            <div class="form-grid">
+                <div class="form-row">
+                    <label>Place name *</label>
+                    <input name="place" type="text" placeholder="Cafe name" required>
+                </div>
+                <div class="form-row">
+                    <label>Date *</label>
+                    <input name="visit_date" type="date" required>
+                </div>
+                <div class="form-row">
+                    <label>What you got *</label>
+                    <input name="order" type="text" placeholder="Flat white, pour-over, etc." required>
+                </div>
+                <div class="form-row">
+                    <label>Privacy *</label>
+                    <select name="visibility" required>
+                        <option value="private" selected>Private (only me)</option>
+                        <option value="public">Public</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Notes</label>
+                <textarea name="notes" rows="3" placeholder="Taste notes, vibe, Wi-Fi, outlets…"></textarea>
+            </div>
+            <div class="form-row">
+                <label>Photos</label>
+                <input name="photo" type="file" accept="image/*" multiple>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Save entry</button>
+                <span class="subtle">Sign in required to post.</span>
+            </div>
+        </form>
+    </section>
+
+    <section>
+        <div class="eyebrow">Your entries</div>
+        <div id="journal-list" class="journal-list"></div>
+        <div id="journal-empty" class="empty-state" style="display:none;">No journal entries yet. Add your first above.</div>
+    </section>
+</div>
+
+<style>
+    .journal-layout { display:grid; grid-template-columns: 0.95fr 1.05fr; gap: 1rem; }
+    .journal-form-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1rem 1.1rem;
+        background: #fffdf9;
+        box-shadow: 0 18px 32px rgba(31,23,20,0.08);
+    }
+    .form-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:0.8rem; }
+    .form-row { display:flex; flex-direction:column; gap:0.3rem; }
+    .form-row input, .form-row select, .form-row textarea {
+        border:1px solid var(--border);
+        border-radius:12px;
+        padding:0.7rem 0.85rem;
+        font-size:1rem;
+        background:#fff;
+    }
+    .form-actions { display:flex; gap:0.6rem; align-items:center; margin-top:0.6rem; }
+    .journal-list { display:grid; gap:0.8rem; margin-top:0.6rem; }
+    .journal-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 0.9rem 1rem;
+        background: #fff;
+        box-shadow: 0 12px 22px rgba(31,23,20,0.05);
+    }
+    .journal-card header { display:flex; justify-content:space-between; align-items:center; gap:0.5rem; }
+    .badge { padding:0.25rem 0.6rem; border-radius:10px; background:var(--foam); border:1px solid var(--border); font-weight:600; }
+    .photos { display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.4rem; }
+    .photos img { width:96px; height:96px; object-fit:cover; border-radius:10px; border:1px solid var(--border); }
+    @media (max-width: 960px){ .journal-layout { grid-template-columns:1fr; } }
+</style>
+
+<script>
+(function(){
+    const mockEntries = [
+        { place:"Sunrise Roasters", date:"2025-11-30", order:"Cortado", notes:"Sunny corner, mellow crowd.", visibility:"public", photos:[] },
+        { place:"Lantern Cafe", date:"2025-11-29", order:"Flat white", notes:"Great latte art, window seat.", visibility:"private", photos:[] },
+    ];
+    const listEl = document.getElementById("journal-list");
+    const emptyEl = document.getElementById("journal-empty");
+    const form = document.getElementById("journal-form");
+    const userLoggedIn = false; // replace with actual auth state
+
+    function render(entries){
+        listEl.innerHTML = "";
+        if(!entries.length){ emptyEl.style.display="block"; return; }
+        emptyEl.style.display="none";
+        entries.forEach(e=>{
+            const card = document.createElement("article");
+            card.className = "journal-card";
+            card.innerHTML = `
+                <header>
+                    <div>
+                        <strong>${e.place}</strong>
+                        <div class="subtle">${e.date} - ${e.order}</div>
+                    </div>
+                    <span class="badge">${e.visibility === "public" ? "Public" : "Private"}</span>
+                </header>
+                <p style="margin:0.5rem 0 0;">${e.notes || ""}</p>
+                <div class="photos">${(e.photos||[]).map(src=>`<img src="${src}" alt="">`).join("")}</div>
+            `;
+            listEl.appendChild(card);
+        });
+    }
+
+    form.addEventListener("submit", async (ev)=>{
+        ev.preventDefault();
+        if(!userLoggedIn){
+            alert("Please sign in to post journal entries.");
+            window.location.href = "/signin/";
+            return;
+        }
+        const fd = new FormData(form);
+        try {
+            const resp = await fetch("/api/journal/create", {
+                method:"POST",
+                headers: {"X-CSRFToken": window.getCsrfToken ? window.getCsrfToken() : ""},
+                body: fd
+            });
+            if(!resp.ok) throw new Error();
+            alert("Entry saved!");
+            location.reload();
+        } catch (e) {
+            alert("Please sign in to post journal entries.");
+        }
+    });
+
+    render(mockEntries);
+})();
+</script>
+{% endblock %}

@@ -1,13 +1,151 @@
 {% extends "base.html" %}
 
-{% block title %}Coffee Corner — Sign in{% endblock %}
+{% block title %}Coffee Corner - Sign in{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Sign in</h1>
-    <p>Access journal, saved shops, and posting tools. Browsing stays open to everyone.</p>
+<div class="page-header" style="margin-bottom: 1.2rem;">
+    <h1>Welcome back</h1>
+    <p>Sign in to save shops, post journals, and join the coffee stream.</p>
 </div>
-<div class="page-placeholder">
-    Placeholder for email + password fields, sign-in button, and link to create an account.
+
+<div class="auth-grid">
+    <form class="auth-card" id="signin-form">
+        <div class="form-row">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="you@example.com">
+        </div>
+        <div class="form-row">
+            <label>Password</label>
+            <div class="password-wrap">
+                <input type="password" name="password" id="signin-password" required placeholder="••••••••">
+                <button type="button" class="mini-btn" id="toggle-signin-pass">Show</button>
+            </div>
+        </div>
+        <div id="signin-status" class="subtle" style="color:#8b3b2e;"></div>
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <p class="subtle" style="margin:0.6rem 0 0;">No account? <a href="{% url 'get_started' %}">Create one</a></p>
+    </form>
+
+    <form class="auth-card" id="signup-form">
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" required placeholder="Your name">
+        </div>
+        <div class="form-row">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="you@example.com">
+        </div>
+        <div class="form-row">
+            <label>Password</label>
+            <div class="password-wrap">
+                <input type="password" name="password" id="signup-password" required placeholder="••••••••">
+                <button type="button" class="mini-btn" id="toggle-signup-pass">Show</button>
+            </div>
+        </div>
+        <div id="signup-status" class="subtle" style="color:#8b3b2e;"></div>
+        <button class="btn btn-ghost" type="submit">Sign up</button>
+    </form>
 </div>
+
+<style>
+    .auth-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; }
+    .auth-card {
+        border:1px solid var(--border);
+        border-radius:16px;
+        padding:1rem 1.1rem;
+        background:#fff;
+        box-shadow:0 18px 32px rgba(31,23,20,0.08);
+        display:grid;
+        gap:0.8rem;
+    }
+    .form-row { display:flex; flex-direction:column; gap:0.25rem; }
+    .form-row input {
+        border:1px solid var(--border);
+        border-radius:12px;
+        padding:0.7rem 0.85rem;
+        font-size:1rem;
+    }
+    .password-wrap { display:flex; gap:0.4rem; align-items:center; }
+    .password-wrap input { flex:1; }
+</style>
+
+<script>
+(function(){
+    function toggle(id, btnId){
+        const input = document.getElementById(id);
+        const btn = document.getElementById(btnId);
+        if(!input || !btn) return;
+        btn.addEventListener("click", () => {
+            const isText = input.type === "text";
+            input.type = isText ? "password" : "text";
+            btn.textContent = isText ? "Show" : "Hide";
+        });
+    }
+    toggle("signin-password","toggle-signin-pass");
+    toggle("signup-password","toggle-signup-pass");
+
+    // Placeholder submit handlers
+    document.getElementById("signin-form").addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        const status = document.getElementById("signin-status");
+        status.textContent = "Signing in...";
+        const form = ev.target;
+        const payload = {
+            email: form.email.value.trim(),
+            password: form.password.value
+        };
+        fetch("/api/auth/login", {
+            method:"POST",
+            credentials:"include",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRFToken": window.getCsrfToken ? window.getCsrfToken() : ""
+            },
+            body: JSON.stringify(payload)
+        }).then(async resp => {
+            if(resp.ok){ status.style.color="#2f7a3b"; status.textContent="Signed in!"; window.location.href="/"; }
+            else {
+                const data = await resp.json().catch(()=>({}));
+                status.style.color="#8b3b2e";
+                status.textContent = data.detail || "Invalid credentials.";
+            }
+        }).catch(() => {
+            status.style.color="#8b3b2e";
+            status.textContent = "Network error. Try again.";
+        });
+    });
+    document.getElementById("signup-form").addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        const status = document.getElementById("signup-status");
+        status.textContent = "Creating account...";
+        const form = ev.target;
+        const email = form.email.value.trim();
+        const name = form.name.value.trim();
+        const payload = {
+            email: email,
+            password: form.password.value,
+            username: name || email.split("@")[0]
+        };
+        fetch("/api/auth/signup", {
+            method:"POST",
+            credentials:"include",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRFToken": window.getCsrfToken ? window.getCsrfToken() : ""
+            },
+            body: JSON.stringify(payload)
+        }).then(async resp => {
+            if(resp.ok){ status.style.color="#2f7a3b"; status.textContent="Account created! Redirecting..."; window.location.href="/"; }
+            else {
+                const data = await resp.json().catch(()=>({}));
+                status.style.color="#8b3b2e";
+                status.textContent = data.detail || "Could not sign up.";
+            }
+        }).catch(() => {
+            status.style.color="#8b3b2e";
+            status.textContent = "Network error. Try again.";
+        });
+    });
+})();
+</script>
 {% endblock %}

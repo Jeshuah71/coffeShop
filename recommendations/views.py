@@ -1,18 +1,26 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from shops.models import CoffeeShop
-from shops.serializers import CoffeeShopSerializer
-from .tags import text_to_tags
-from .scoring import score_shop, to_reason
+from .services import ShopRecommender
+from .agent import CatChatbotAgent
+from .services import QuoteRecommender
+from .ml_sentiment import SentimentAnalyzer
+from .models import Quote
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def recommend(request):
     text = (request.data.get("text") or "").strip()
     if not text: return Response({"detail":"text required"}, status=400)
-    tagset = text_to_tags(text)
-    shops = list(CoffeeShop.objects.all())
-    scored = sorted(shops, key=lambda s: score_shop(s, tagset), reverse=True)[:3]
-    items = [{"shop":CoffeeShopSerializer(s).data,
-              "reason":to_reason(s, tagset),
-              "score": round(score_shop(s, tagset),3)} for s in scored]
-    return Response({"tags": sorted(tagset), "items": items})
+    recommender = ShopRecommender()
+    items = recommender.recommend(text)
+    return Response({"items": items})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def catbot(request):
+    prompt = (request.data.get("message") or "").strip()
+    agent = CatChatbotAgent()
+    reply = agent.get_response(prompt)
+    return Response({"reply": reply, "prompt": prompt})

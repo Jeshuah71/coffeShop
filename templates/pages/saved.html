@@ -1,13 +1,56 @@
 {% extends "base.html" %}
 
-{% block title %}Coffee Corner — Saved{% endblock %}
+{% block title %}Coffee Corner - Saved{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1>Saved</h1>
     <p>Quick access to favorite shops. Sign in to manage this list.</p>
 </div>
-<div class="page-placeholder">
-    Placeholder for saved cards with open indicators and remove actions.
-</div>
+<div id="favorites" class="card-grid"></div>
+<div class="empty-state" id="fav-empty" style="display:none;">No favorites yet. Head to Places to add some.</div>
+<script>
+async function loadFavorites(){
+    try{
+        const resp = await fetch("/api/reviews/favorites");
+        if(!resp.ok){ document.getElementById("fav-empty").style.display="block"; return; }
+        const data = await resp.json();
+        const container = document.getElementById("favorites");
+        if(data.length){
+            data.forEach(f=>{
+                const div = document.createElement("div");
+                div.className="card";
+                div.innerHTML = `<strong>Shop #${f.shop}</strong><p class="subtle">Favorited entry</p>`;
+                container.appendChild(div);
+            });
+        }
+        const local = JSON.parse(localStorage.getItem("savedPlaces") || "[]");
+        if(local.length){
+            local.forEach(p=>{
+                const div = document.createElement("div");
+                div.className="card";
+                div.innerHTML = `<strong>${p.name}</strong><p class="subtle">${p.address || ""}</p>`;
+                container.appendChild(div);
+            });
+        }
+        if(!data.length && !local.length){
+            document.getElementById("fav-empty").style.display="block";
+        }
+    }catch(e){
+        const local = JSON.parse(localStorage.getItem("savedPlaces") || "[]");
+        if(local.length){
+            const container = document.getElementById("favorites");
+            local.forEach(p=>{
+                const div = document.createElement("div");
+                div.className="card";
+                div.innerHTML = `<strong>${p.name}</strong><p class="subtle">${p.address || ""}</p>`;
+                container.appendChild(div);
+            });
+        } else {
+            document.getElementById("fav-empty").style.display="block";
+        }
+    }
+}
+loadFavorites();
+</script>
 {% endblock %}

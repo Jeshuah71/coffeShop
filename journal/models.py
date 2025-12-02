@@ -10,3 +10,9 @@ class JournalEntry(models.Model):
     my_rating = models.IntegerField()    # 1..5
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def summary(self) -> str:
+        return f"{self.shop.name} on {self.visit_date} — {self.my_rating}/5"
+
+    def short_notes(self, length:int=80) -> str:
+        return (self.notes or "")[:length]

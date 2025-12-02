@@ -1,8 +1,11 @@
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from .models import Profile
+from .serializers import ProfileSerializer, UserSerializer
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -13,8 +16,10 @@ def signup(request):
     username = request.data.get("username") or email.split("@")[0]
     if User.objects.filter(username=username).exists():
         return Response({"detail":"username taken"}, status=400)
-    user = User.objects.create_user(username=username, email=email, password=password)
-    return Response({"id":user.id,"username":user.username,"email":user.email}, status=201)
+    with transaction.atomic():
+        user = User.objects.create_user(username=username, email=email, password=password)
+        Profile.objects.get_or_create(user=user)
+    return Response(UserSerializer(user).data, status=201)
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -38,4 +43,10 @@ def logout_view(request):
 @permission_classes([IsAuthenticated])
 def me(request):
     u = request.user
-    return Response({"id":u.id, "username":u.username, "email":u.email})
+    return Response(UserSerializer(u).data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    prof, _ = Profile.objects.get_or_create(user=request.user)
+    return Response(ProfileSerializer(prof).data)
