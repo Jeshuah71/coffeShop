@@ -3,13 +3,138 @@
 {% block title %}Coffee Corner - Get started{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Get started</h1>
-    <p>Create an account so you can publish posts, save shops, and keep a personal journal.</p>
-</div>
-<div class="auth-card" style="max-width:520px;">
-    <p style="margin:0 0 0.6rem;">Ready to join? Sign up to sync favorites and post journals.</p>
-    <a class="btn btn-primary" href="{% url 'signup_page' %}">Sign up</a>
-    <p class="subtle" style="margin:0.6rem 0 0;">Already have an account? <a href="{% url 'signin' %}">Sign in</a></p>
-</div>
+<section class="getstarted-hero">
+    <div class="hero-card">
+        <span class="pill">Launch-ready profile</span>
+        <h1>Start your Coffee Corner profile in minutes</h1>
+        <p class="lead">Create an account to publish reviews, keep a daily coffee journal, and save every shop you love—synced across devices.</p>
+        <div class="cta-row">
+            <a class="btn btn-primary" href="{% url 'signup_page' %}">Sign up free</a>
+            <a class="btn btn-ghost" href="{% url 'signin' %}">I already have an account</a>
+        </div>
+        <div class="trust-row">
+            <div>
+                <strong>Instant access</strong>
+                <p>Stay signed in securely with session protection and one-click logout.</p>
+            </div>
+            <div>
+                <strong>Built for explorers</strong>
+                <p>Save routes, favorite cafés, and pick up where you left off.</p>
+            </div>
+            <div>
+                <strong>Privacy first</strong>
+                <p>No selling data. Ever. You control what’s shared.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="benefit-grid">
+        <div class="benefit">
+            <div class="badge">01</div>
+            <div>
+                <h3>Publish and share</h3>
+                <p>Post reviews, journal entries, and guides that friends can follow.</p>
+            </div>
+        </div>
+        <div class="benefit">
+            <div class="badge">02</div>
+            <div>
+                <h3>Save shops you love</h3>
+                <p>Bookmark cafés with notes, photos, and a personal rating.</p>
+            </div>
+        </div>
+        <div class="benefit">
+            <div class="badge">03</div>
+            <div>
+                <h3>Sync across devices</h3>
+                <p>Sign in once and keep your list consistent on desktop and mobile.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .getstarted-hero {
+        display: grid;
+        gap: 1.4rem;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        align-items: start;
+    }
+    .hero-card {
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 1.5rem;
+        background: radial-gradient(circle at 20% 20%, rgba(212, 107, 66, 0.08), rgba(255,255,255,0.95) 45%), #fffefb;
+        box-shadow: 0 24px 48px rgba(31, 23, 20, 0.08);
+        overflow: hidden;
+    }
+    .hero-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 80% 10%, rgba(212, 107, 66, 0.12), transparent 50%);
+        pointer-events: none;
+    }
+    .hero-card h1 {
+        margin: 0.6rem 0 0.4rem;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+    }
+    .hero-card .lead {
+        margin: 0 0 1.2rem;
+        color: #4e3b35;
+        max-width: 580px;
+        font-size: 1.05rem;
+    }
+    .cta-row {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1.1rem;
+    }
+    .trust-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.8rem;
+        margin-top: 0.4rem;
+    }
+    .trust-row strong { display: block; margin-bottom: 0.2rem; }
+    .trust-row p {
+        margin: 0;
+        color: #6d554f;
+        font-size: 0.95rem;
+    }
+    .benefit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 0.8rem;
+    }
+    .benefit {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 1px solid rgba(75, 46, 43, 0.14);
+        border-radius: 18px;
+        background: linear-gradient(150deg, rgba(255,250,244,0.96), rgba(255,255,255,0.96));
+        box-shadow: 0 16px 34px rgba(31, 23, 20, 0.08);
+    }
+    .benefit h3 { margin: 0 0 0.25rem; }
+    .benefit p { margin: 0; color: #6d554f; }
+    .badge {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        color: #d46b42;
+        background: rgba(212, 107, 66, 0.12);
+        border: 1px solid rgba(212, 107, 66, 0.4);
+    }
+    @media (max-width: 720px) {
+        .cta-row { flex-direction: column; align-items: flex-start; }
+    }
+</style>
 {% endblock %}
