@@ -1,61 +1,66 @@
-CoffeeCorner
-CoffeeCorner is a full-stack Django web application that helps users discover, review, and track their favorite coffee shops.
-It combines user accounts, shop search, reviews, and a personal coffee journal with basic sentiment-aware recommendations.
+README - Coffee Corner (coffee_compass)
 
-Team:
-Kerri Jensen (kerrijensen13@gmail.com)
-Jeshua Herrera (jeshuah04@gmail.com)
+Django 5 app for discovering, reviewing, and journaling coffee shops. Serves server-rendered pages for accounts, shops, reviews, journals, and lightweight recommendations (including a TF-IDF “Catbot”).
 
-1. Project Overview
-CoffeeCorner lets users:
+Features
+- Public pages: home, places, products, saved, journal, blog, help, contact, get-started, catbot (maps use Google Maps API key).
+- Session auth: signup, login/logout; `Profile` tracks journal and favorite counts.
+- Shops: filter by tags with optional distance hints (haversine on stored lat/lon), detail, and menu endpoints.
+- Reviews/Favorites: create reviews (updates rolling average rating), list reviews, add/remove favorites.
+- Journal: create entries (shop + optional menu item, visit date, rating, notes); creation bumps profile counters and triggers cached quote/recommendation observers.
+- Recommendations: text-to-tag shop ranking and a TF-IDF chatbot; toy scikit-learn sentiment model selects mood-tagged quotes.
 
-Create an account and sign in
-Browse and view coffee shops
-Save favorites and see shop details
-Write reviews for shops
-Keep a private journal about their coffee experiences
-Receive simple recommendations and quotes based on user moods
-Explore static marketing pages (home, help, contact, etc.)
-The backend is built with Django and PostgreSQL, with a small machine learning component using scikit-learn for text sentiment / feature extraction.
+Stack
+- Python 3.13, Django 5, Django REST Framework, django-cors-headers.
+- DB: SQLite by default; PostgreSQL when `POSTGRES_HOST` is set (Compose uses Postgres 16).
+- ML: scikit-learn (TfidfVectorizer + LogisticRegression) for sentiment/chat similarity.
+- Front end: Django templates + static assets; optional Google Maps API key for templates.
 
-2. Tech Stack
-Language: Python 3.13
-Web Framework: Django
-Database: PostgreSQL (via Docker) or SQLite (local dev, if configured)
-ML / NLP: scikit-learn (TfidfVectorizer)
-Containerization: Docker + Docker Compose
-Front-end: Django templates (HTML/CSS), static images/assets
-3. Repository Structure
-This project follows a standard Django application layout. Instead of placing everything under /src/, Django organizes functionality by "apps," each responsible for a specific feature domain (accounts, shops, reviews, journal, etc.).
+Project Layout
+- `coffee_compass/` – settings, URLs, simple page renders.
+- `accounts/`, `shops/`, `reviews/`, `journal/`, `recommendations/` – core apps/APIs.
+- `templates/`, `static/` – UI templates and assets.
+- `docker-compose.yml`, `Dockerfile`, `entrypoint.sh`, `requirements.txt`, `manage.py` – runtime tooling.
+- `api/`, `common/` – stubs not wired into the main URL config.
 
-Below is the structure of this repository:
+Configuration
+Export env vars or place them in `.env`:
+```
+DJANGO_SECRET_KEY=change-me
+DJANGO_DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1,web
+POSTGRES_HOST=             # leave empty to use SQLite
+POSTGRES_DB=coffee_compass
+POSTGRES_USER=cc_user
+POSTGRES_PASSWORD=supersecret
+POSTGRES_PORT=5432
+GOOGLE_MAPS_API_KEY=     
+```
 
-COFFESHOP/
-├── accounts/                 # User authentication and account management
-├── api/                      # (Optional) API routing or shared API helpers
-├── coffee_compass/           # Django project settings, URLs, WSGI/ASGI setup
-│   ├── settings/             # Base/dev/prod environment configurations
-│   └── urls.py               # Root URL dispatcher
-├── common/                   # Shared utilities and helper modules
-├── journal/                  # Personal journal entries and related logic
-├── ops/                      # Operational scripts / deployment utilities
-├── recommendations/          # Recommendation engine + ML sentiment analysis
-├── reviews/                  # Shop reviews and user ratings
-├── shops/                    # Coffee shop models, views, serializers, seeds
-├── static/                   # Static assets (logos, images, CSS)
-├── templates/                # HTML templates (base layout + pages)
-│
-├── venv/                     # Local virtual environment (ignored in Git)
-│
-├── .env                      # Local environment variables (not committed)
-├── .env.example              # Template environment file
-├── .gitignore                # Files and folders ignored by Git
-├── docker-compose.yml        # Docker orchestration for app + database
-├── Dockerfile                # Build instructions for Django container
-├── entrypoint.sh             # Startup script for Docker service
-├── Makefile                  # Optional helper commands for development
-├── manage.py                 # Standard Django management script
-├── main.py                   # Unified entry point required by assignment
-├── pyproject.toml            # Project metadata / tool configuration
-├── README.md                 # Project overview and documentation
-└── requirements.txt          # Python dependencies
+Local Development (SQLite)
+```
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+Docker Compose (Postgres)
+1) Add a `.env` with the vars above (set `POSTGRES_HOST=db`; set `DJANGO_DEBUG=False` if desired).
+2) Start:
+```
+docker compose up --build
+```
+`entrypoint.sh` waits for Postgres, runs migrations, and serves on http://localhost:8000.
+
+API Outline
+- Accounts: `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/profile`.
+- Shops: `GET /api/shops?query=&tags=&lat=&lon=`, `GET /api/shops/<id>`, `GET /api/shops/<id>/menu`.
+- Reviews/Favorites: `GET /api/reviews?shopId=`, `POST /api/reviews/create` (auth), `GET /api/reviews/favorites` (auth), `POST /api/reviews/favorites/add` (auth), `DELETE /api/reviews/favorites/<shop_id>` (auth).
+- Journal: `GET /api/journal/` (auth), `POST /api/journal/create` (auth).
+- Recommendations: `POST /api/recommendations/` (text prompt), `POST /api/recommendations/catbot` (chatbot).
+
+Notes
+- Auth uses Django sessions; CORS is open for development.
+- Without `POSTGRES_HOST`, SQLite is used at `db.sqlite3` in the project root.

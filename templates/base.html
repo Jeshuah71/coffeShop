@@ -317,8 +317,15 @@
                 <a href="{% url 'contact' %}" class="nav-link{% if current == 'contact' %} is-active{% endif %}">Contact</a>
             </nav>
             <div class="cta-group">
-                <a href="{% url 'signin' %}" class="cta-link sign-in{% if current == 'signin' %} is-active{% endif %}">Sign in</a>
-                <a href="{% url 'get_started' %}" class="cta-link get-started{% if current == 'get_started' %} is-active{% endif %}">Get started</a>
+                {% if request.user.is_authenticated %}
+                    <div class="cta-link" style="background:#fff7f2; border:1px solid var(--border); color:#5a413c; font-weight:700; padding:0.6rem 0.9rem; border-radius:12px;">
+                        {{ request.user.username }}
+                    </div>
+                    <a href="{% url 'logout_redirect' %}" class="cta-link sign-in">Logout</a>
+                {% else %}
+                    <a href="{% url 'signin' %}" class="cta-link sign-in{% if current == 'signin' %} is-active{% endif %}">Sign in</a>
+                    <a href="{% url 'get_started' %}" class="cta-link get-started{% if current == 'get_started' %} is-active{% endif %}">Get started</a>
+                {% endif %}
             </div>
             {% endwith %}
         </div>

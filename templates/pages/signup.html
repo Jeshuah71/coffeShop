@@ -3,34 +3,46 @@
 {% block title %}Coffee Corner - Sign up{% endblock %}
 
 {% block content %}
-<div class="page-header" style="margin-bottom:1.2rem;">
-    <h1>Create your account</h1>
-    <p>Save favorites, post journals, and join the coffee stream.</p>
-</div>
-<div class="auth-card">
-    <form id="signup-form">
-        <div class="form-row">
-            <label>Name</label>
-            <input type="text" name="name" required placeholder="Your name">
-        </div>
-        <div class="form-row">
-            <label>Email</label>
-            <input type="email" name="email" required placeholder="you@example.com">
-        </div>
-        <div class="form-row">
-            <label>Password</label>
-            <div class="password-wrap">
-                <input type="password" name="password" id="signup-password" required placeholder="••••••••">
-                <button type="button" class="mini-btn" id="toggle-signup-pass">Show</button>
+<div class="signup-shell">
+    <div class="page-header" style="text-align:center; margin-bottom:1.2rem;">
+        <h1>Create your account</h1>
+        <p>Save favorites, post journals, and join the coffee stream.</p>
+    </div>
+    <div class="auth-card">
+        <form id="signup-form">
+            <div class="form-row">
+                <label>Name</label>
+                <input type="text" name="name" required placeholder="Your name">
             </div>
-        </div>
-        <div id="signup-status" class="subtle" style="color:#8b3b2e;"></div>
-        <button class="btn btn-primary" type="submit">Sign up</button>
-        <p class="subtle" style="margin:0.6rem 0 0;">Already have an account? <a href="{% url 'signin' %}">Sign in</a></p>
-    </form>
+            <div class="form-row">
+                <label>Email</label>
+                <input type="email" name="email" required placeholder="you@example.com">
+            </div>
+            <div class="form-row">
+                <label>Password</label>
+                <div class="password-wrap">
+                    <input type="password" name="password" id="signup-password" required placeholder="••••••••">
+                    <button type="button" class="mini-btn" id="toggle-signup-pass">Show</button>
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Profile image URL (optional)</label>
+                <input type="url" name="avatar_url" placeholder="https://...">
+            </div>
+            <div id="signup-status" class="subtle" style="color:#8b3b2e;"></div>
+            <button class="btn btn-primary" type="submit">Sign up</button>
+            <p class="subtle" style="margin:0.6rem 0 0;">Already have an account? <a href="{% url 'signin' %}">Sign in</a></p>
+        </form>
+    </div>
 </div>
 
 <style>
+    .signup-shell {
+        display: grid;
+        place-items: center;
+        gap: 0.6rem;
+        margin-top: 0.4rem;
+    }
     .auth-card {
         border:1px solid var(--border);
         border-radius:16px;
@@ -69,7 +81,8 @@
         const payload = {
             email: email,
             password: form.password.value,
-            username: name || email.split("@")[0]
+            username: name || email.split("@")[0],
+            avatar_url: form.avatar_url.value.trim()
         };
         fetch("/api/auth/signup", {
             method:"POST",

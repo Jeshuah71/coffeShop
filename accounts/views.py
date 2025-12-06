@@ -14,11 +14,15 @@ def signup(request):
     if not email or not password:
         return Response({"detail":"email and password required"}, status=400)
     username = request.data.get("username") or email.split("@")[0]
+    avatar = request.data.get("avatar_url") or ""
     if User.objects.filter(username=username).exists():
         return Response({"detail":"username taken"}, status=400)
     with transaction.atomic():
         user = User.objects.create_user(username=username, email=email, password=password)
-        Profile.objects.get_or_create(user=user)
+        prof, _ = Profile.objects.get_or_create(user=user)
+        if avatar:
+            prof.avatar_url = avatar
+            prof.save(update_fields=["avatar_url"])
     return Response(UserSerializer(user).data, status=201)
 
 @api_view(["POST"])

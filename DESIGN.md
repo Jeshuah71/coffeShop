@@ -1,70 +1,50 @@
-DESIGN.md – CoffeeCorner
-1. System Overview
-CoffeeCorner is a Django-based web application designed to help users discover, review, and track their favorite coffee shops. The system uses Django’s multi-app architecture, where each feature (accounts, shops, reviews, journal, recommendations) is separated into its own app for clarity and maintainability.
+DESIGN – Coffee Corner (coffee_compass)
 
-The application runs using Docker (Django + PostgreSQL), but can also run locally via python main.py.
+1) Overview
+- Django 5 app with server-rendered pages plus JSON APIs for accounts, shops, reviews/favorites, journals, and lightweight recommendations (shop ranker + TF-IDF “Catbot” + toy sentiment-based quotes).
+- Default SQLite for quick dev; PostgreSQL when `POSTGRES_HOST` is set (Docker Compose uses Postgres 16). CORS is open for development.
+- Optional Google Maps API key injected into templates for map widgets.
 
-2. Architecture
-Project Structure
-coffee_compass/ – Project configuration (settings, URLs, WSGI/ASGI)
-accounts/ – User registration, login, and authentication
-shops/ – Coffee shop data, detail pages, and business logic
-reviews/ – User reviews and ratings linked to shops
-journal/ – Personal user journal entries
-recommendations/ – Simple recommendation logic + sentiment analysis (scikit-learn)
-templates/ – HTML pages rendered by Django
-static/ – Images, CSS, logos
-main.py – Assignment-required entry point
-How Requests Flow
-User request → URL routing → View → Service logic → Database → Template response.
+2) Architecture
+- Apps: `accounts`, `shops`, `reviews`, `journal`, `recommendations`, plus `coffee_compass` (project settings/URLs) and stubs (`api`, `common` not wired into URLs).
+- Routing: `coffee_compass/urls.py` serves public pages and mounts app APIs under `/api/*`.
+- Views: DRF function-based views for JSON; Django template views for marketing pages and Catbot page.
+- Settings: `coffee_compass/settings.py` switches SQLite/Postgres based on env vars; loads `.env` if present; Django sessions for auth.
+- Static/UI: `templates/` and `static/` provide the front-end layout.
 
-3. Key Design Decisions
-(1) Multi-App Django Architecture
-We used Django’s recommended structure of splitting features into separate apps.
-This makes the code easier to maintain and allows features to evolve independently.
+3) Runtime & Configuration
+- Env vars (examples): `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `ALLOWED_HOSTS`, `POSTGRES_HOST/DB/USER/PASSWORD/PORT`, `GOOGLE_MAPS_API_KEY`.
+- Local (SQLite): `pip install -r requirements.txt`, `python manage.py migrate`, `python manage.py runserver 0.0.0.0:8000`.
+- Docker Compose (Postgres 16): `docker compose up --build` after `.env` is set (with `POSTGRES_HOST=db`). `entrypoint.sh` waits for DB then migrates.
 
-(2) Service Layer for Recommendations
-Instead of embedding ML logic in views, we placed sentiment analysis and recommendation logic inside recommendations/services.py.
-This separation keeps views simple and allows the ML layer to be improved later.
+4) Data Model (simplified)
+- User (Django auth)
+  - Profile (OneToOne) tracks favorite_count, journal_count.
+  - Reviews (1..N) with rating/comment; Favorites (many shops).
+  - JournalEntries (1..N) with shop, optional menu item, visit date, rating, notes.
+- CoffeeShop with avg_rating, rating_count, tags, lat/lon, menu items.
+- MenuItem belongs to CoffeeShop.
+- Quote with mood_tag (used by recommendations sentiment flow).
 
-(3) Docker for Environment Consistency
-Docker ensures the project runs the same way for every team member and for the grader (Python version, database, dependencies).
+5) Core Behaviors
+- Accounts: signup/login/logout via session auth; `/api/auth/me` and `/api/auth/profile` return user/profile data.
+- Shops: list with query/tag filters and optional haversine distance when lat/lon provided; detail and menu endpoints.
+- Reviews/Favorites: create review updates rolling average on the shop; add/remove/list favorites.
+- Journal: list/create entries; creation increments profile counters and notifies observers for cached quotes/recommendations.
+- Recommendations: text-to-tag shop ranking (`/api/recommendations/`) and TF-IDF Catbot (`/api/recommendations/catbot`); sentiment model (scikit-learn) picks a mood-tagged quote when available.
+- Frontend pages: home, places, products, saved, journal, blog, help, contact, get-started, catbot (Catbot UI backed by the API).
 
-(4) Use of Environment Variables
-The system loads sensitive configuration (database credentials, secret keys) from a .env file, following best practices.
+6) Request Flow
+Client → `coffee_compass/urls.py` → app `urls.py` (API) or template view → view logic/service helpers → database → JSON or HTML response.
 
-4. Data Model (Simplified)
-User
+7) Key Design Decisions
+- Feature-per-app structure to keep domains isolated (accounts, shops, reviews, journal, recommendations).
+- Simple services for recommendations, distance (haversine), and sentiment to keep views thin and swappable.
+- Session authentication to align with server-rendered pages; CORS left open for development use.
+- Environment-driven DB selection to allow SQLite (quick dev) or Postgres (Compose/production-like).
 
-has many Reviews
-has many JournalEntries
-Shop
-
-has many Reviews
-stores an aggregate rating
-Review
-
-belongs to User + Shop
-stores rating + text
-JournalEntry
-
-belongs to User
-text used by sentiment analyzer
-5. Challenges & What We Learned
-Merge conflicts
-We learned to resolve remote/local changes carefully and ignore __pycache__ files using .gitignore.
-
-Docker rebuilds
-Adding ML dependencies (like scikit-learn) required updating requirements.txt and rebuilding the container.
-
-Coordinating URLs and Views
-As features expanded, it became more important to keep routing organized using per-app urls.py files.
-
-Overall, we learned not only Django syntax but how to structure a multi-feature application cleanly.
-
-6. Future Improvements
-More advanced recommendation system
-Better UI/UX and responsive design
-API endpoints using Django REST Framework
-More thorough automated tests
-Shop owner accounts with permissions
+8) Future Improvements
+- Harden auth (password reset, email verification, CSRF/CORS tightening for production).
+- Expand recommendation logic beyond heuristic tags (collaborative filtering or embeddings).
+- Add automated tests and CI runs.
+- Improve UI responsiveness and add validation/feedback on forms.

@@ -14,6 +14,7 @@ urlpatterns = [
     path("signin/", views.sign_in, name="signin"),
     path("signup/", views.sign_up, name="signup_page"),
     path("get-started/", views.get_started, name="get_started"),
+    path("logout/", views.logout_redirect, name="logout_redirect"),
     path("catbot/", views.catbot, name="catbot"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),

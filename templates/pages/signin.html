@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    <div class="auth-panels">
+    <div class="auth-panels" style="margin-top: 6.4rem;">
         <form class="auth-card" id="signin-form">
             <div class="form-head">
                 <div>
@@ -59,34 +59,7 @@
             </div>
             <div id="signin-status" class="status subtle" aria-live="polite"></div>
             <button class="btn btn-primary" type="submit">Sign in</button>
-            <p class="subtle" style="margin:0.6rem 0 0;">No account? <a href="{% url 'get_started' %}">Create one</a></p>
-        </form>
-
-        <form class="auth-card secondary" id="signup-form">
-            <div class="form-head">
-                <div>
-                    <p class="eyebrow">New here?</p>
-                    <h2>Create your account</h2>
-                </div>
-                <p class="form-hint">Join the stream and start saving favorites.</p>
-            </div>
-            <div class="form-row">
-                <label for="signup-name">Name</label>
-                <input type="text" name="name" id="signup-name" required placeholder="Your name" autocomplete="name">
-            </div>
-            <div class="form-row">
-                <label for="signup-email">Email</label>
-                <input type="email" name="email" id="signup-email" required placeholder="you@example.com" autocomplete="email">
-            </div>
-            <div class="form-row">
-                <label for="signup-password">Password</label>
-                <div class="password-wrap">
-                    <input type="password" name="password" id="signup-password" required placeholder="••••••••" autocomplete="new-password">
-                    <button type="button" class="mini-btn" id="toggle-signup-pass" aria-label="Show or hide password">Show</button>
-                </div>
-            </div>
-            <div class="status subtle" id="signup-status" aria-live="polite"></div>
-            <button class="btn btn-ghost" type="submit">Create account</button>
+            <p class="subtle" style="margin:0.6rem 0 0;">No account? <a href="{% url 'get_started' %}">Get started</a></p>
         </form>
     </div>
 </section>

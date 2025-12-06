@@ -13,35 +13,35 @@
     <section class="journal-form-card">
         <div class="eyebrow">New entry</div>
         <form id="journal-form" enctype="multipart/form-data">
-            <div class="form-grid">
-                <div class="form-row">
-                    <label>Place name *</label>
-                    <input name="place" type="text" placeholder="Cafe name" required>
-                </div>
-                <div class="form-row">
-                    <label>Date *</label>
-                    <input name="visit_date" type="date" required>
-                </div>
-                <div class="form-row">
-                    <label>What you got *</label>
-                    <input name="order" type="text" placeholder="Flat white, pour-over, etc." required>
-                </div>
-                <div class="form-row">
-                    <label>Privacy *</label>
-                    <select name="visibility" required>
-                        <option value="private" selected>Private (only me)</option>
-                        <option value="public">Public</option>
-                    </select>
-                </div>
+        <div class="form-grid">
+            <div class="form-row">
+                <label>Place name *</label>
+                <input name="place_name" type="text" placeholder="Cafe name" required>
             </div>
             <div class="form-row">
-                <label>Notes</label>
-                <textarea name="notes" rows="3" placeholder="Taste notes, vibe, Wi-Fi, outlets…"></textarea>
+                <label>Date *</label>
+                <input name="visit_date" type="date" required>
             </div>
-            <div class="form-row">
-                <label>Photos</label>
-                <input name="photo" type="file" accept="image/*" multiple>
+        </div>
+        <div class="form-row">
+            <label>Rating *</label>
+            <div class="stars" data-stars>
+                {% for i in rating_slots %}
+                <button type="button" class="star" data-index="{{ forloop.counter0 }}" aria-label="Rate {{ forloop.counter }}">
+                    ★
+                </button>
+                {% endfor %}
+                <input type="hidden" name="my_rating" id="rating-value" required>
             </div>
+        </div>
+        <div class="form-row">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="Taste notes, vibe, Wi-Fi, outlets…"></textarea>
+        </div>
+        <div class="form-row">
+            <label>Photos</label>
+            <input name="photo" type="file" accept="image/*" multiple>
+        </div>
             <div class="form-actions">
                 <button class="btn btn-primary" type="submit">Save entry</button>
                 <span class="subtle">Sign in required to post.</span>
@@ -76,6 +76,26 @@
     }
     .form-actions { display:flex; gap:0.6rem; align-items:center; margin-top:0.6rem; }
     .journal-list { display:grid; gap:0.8rem; margin-top:0.6rem; }
+    .stars { display:flex; gap:0.2rem; flex-wrap:wrap; align-items:center; }
+    .stars .star {
+        border:none;
+        background:transparent;
+        font-size:1.8rem;
+        color:#c2b3ab;
+        cursor:pointer;
+        transition:color 0.15s ease, transform 0.15s ease;
+        padding:0.1rem;
+        line-height:1;
+        position: relative;
+    }
+    .stars .star.is-full { color:#c2552b; transform:translateY(-1px); }
+    .stars .star.is-half {
+        color:#c2552b;
+        transform:translateY(-1px);
+        background: linear-gradient(90deg, #c2552b 50%, #c2b3ab 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
     .journal-card {
         border: 1px solid var(--border);
         border-radius: 14px;
@@ -92,14 +112,11 @@
 
 <script>
 (function(){
-    const mockEntries = [
-        { place:"Sunrise Roasters", date:"2025-11-30", order:"Cortado", notes:"Sunny corner, mellow crowd.", visibility:"public", photos:[] },
-        { place:"Lantern Cafe", date:"2025-11-29", order:"Flat white", notes:"Great latte art, window seat.", visibility:"private", photos:[] },
-    ];
     const listEl = document.getElementById("journal-list");
     const emptyEl = document.getElementById("journal-empty");
     const form = document.getElementById("journal-form");
-    const userLoggedIn = false; // replace with actual auth state
+    const starsEl = document.querySelector("[data-stars]");
+    const ratingInput = document.getElementById("rating-value");
 
     function render(entries){
         listEl.innerHTML = "";
@@ -108,44 +125,118 @@
         entries.forEach(e=>{
             const card = document.createElement("article");
             card.className = "journal-card";
+            const rating = e.my_rating ? `★ ${Number(e.my_rating).toFixed(1)}` : "";
             card.innerHTML = `
                 <header>
                     <div>
-                        <strong>${e.place}</strong>
-                        <div class="subtle">${e.date} - ${e.order}</div>
+                        <strong>${e.shop_name || e.shop || "Coffee visit"}</strong>
+                        <div class="subtle">${e.visit_date || ""}${rating ? " • " + rating : ""}</div>
                     </div>
-                    <span class="badge">${e.visibility === "public" ? "Public" : "Private"}</span>
+                    <span class="badge">Saved</span>
                 </header>
                 <p style="margin:0.5rem 0 0;">${e.notes || ""}</p>
-                <div class="photos">${(e.photos||[]).map(src=>`<img src="${src}" alt="">`).join("")}</div>
             `;
             listEl.appendChild(card);
         });
     }
 
+    async function loadEntries(){
+        try {
+            const resp = await fetch("/api/journal/");
+            if(resp.status === 401 || resp.status === 403){
+                listEl.innerHTML = '<p class="empty-state">Sign in to view your journal.</p>';
+                return;
+            }
+            if(!resp.ok) throw new Error();
+            const data = await resp.json();
+            render(data);
+        } catch (e) {
+            listEl.innerHTML = '<p class="empty-state">Could not load journal entries.</p>';
+        }
+    }
+
+    function selectStars(val){
+        const stars = Array.from(starsEl.querySelectorAll(".star"));
+        stars.forEach((star, idx)=>{
+            const full = idx + 1;
+            star.classList.remove("is-full","is-half");
+            if (val >= full) {
+                star.classList.add("is-full");
+            } else if (val >= full - 0.5) {
+                star.classList.add("is-half");
+            }
+        });
+        ratingInput.value = val || "";
+    }
+
+    function setupStars(){
+        const stars = Array.from(starsEl.querySelectorAll(".star"));
+        stars.forEach((btn, idx)=>{
+            btn.addEventListener("click", (e)=>{
+                const rect = btn.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const half = clickX <= rect.width / 2 ? 0.5 : 1;
+                const val = idx + half;
+                selectStars(val);
+            });
+        });
+        selectStars(2.5);
+    }
+
     form.addEventListener("submit", async (ev)=>{
         ev.preventDefault();
-        if(!userLoggedIn){
-            alert("Please sign in to post journal entries.");
-            window.location.href = "/signin/";
+        const rating = ratingInput.value;
+        if(!rating){
+            alert("Please select a rating.");
             return;
         }
-        const fd = new FormData(form);
+        const fd = new FormData();
+        fd.set("place_name", form.place_name.value);
+        // Ensure date is ISO (yyyy-mm-dd)
+        const dateVal = form.visit_date.value;
+        let isoDate = dateVal;
+        if (dateVal && dateVal.includes("/")) {
+            const parts = dateVal.split("/");
+            if (parts.length === 3) {
+                const [mm, dd, yyyy] = parts;
+                isoDate = `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+            }
+        }
+        fd.set("visit_date", isoDate);
+        fd.set("my_rating", rating);
+        fd.set("notes", form.notes.value);
+        const photos = form.photo?.files || [];
+        Array.from(photos).forEach(file => fd.append("photo", file));
         try {
             const resp = await fetch("/api/journal/create", {
                 method:"POST",
                 headers: {"X-CSRFToken": window.getCsrfToken ? window.getCsrfToken() : ""},
+                credentials: "include",
                 body: fd
             });
-            if(!resp.ok) throw new Error();
+            if(resp.status === 401 || resp.status === 403){
+                alert("Please sign in to post journal entries.");
+                window.location.href = "/signin/";
+                return;
+            }
+            if(!resp.ok) {
+                const err = await resp.json().catch(()=>({detail:""}));
+                const msg = err.detail || (err.errors ? JSON.stringify(err.errors) : "save_failed");
+                throw new Error(msg);
+            }
+            form.reset();
+            ratingInput.value = "";
+            selectStars(2.5);
+            loadEntries();
             alert("Entry saved!");
-            location.reload();
         } catch (e) {
-            alert("Please sign in to post journal entries.");
+            console.error("journal save failed", e);
+            alert("Could not save entry right now.");
         }
     });
 
-    render(mockEntries);
+    setupStars();
+    loadEntries();
 })();
 </script>
 {% endblock %}

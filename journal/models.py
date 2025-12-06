@@ -7,7 +7,7 @@ class JournalEntry(models.Model):
     shop = models.ForeignKey(CoffeeShop, on_delete=models.CASCADE, related_name="journal_entries")
     item = models.ForeignKey(MenuItem, null=True, blank=True, on_delete=models.SET_NULL)
     visit_date = models.DateField()
-    my_rating = models.IntegerField()    # 1..5
+    my_rating = models.DecimalField(max_digits=3, decimal_places=1)    # allows half steps
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

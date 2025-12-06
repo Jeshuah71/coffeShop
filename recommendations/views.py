@@ -6,6 +6,7 @@ from .agent import CatChatbotAgent
 from .services import QuoteRecommender
 from .ml_sentiment import SentimentAnalyzer
 from .models import Quote
+from django.http import HttpResponseRedirect
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -17,9 +18,11 @@ def recommend(request):
     return Response({"items": items})
 
 
-@api_view(["POST"])
+@api_view(["POST", "GET"])
 @permission_classes([AllowAny])
 def catbot(request):
+    if request.method == "GET":
+        return HttpResponseRedirect("/catbot")
     prompt = (request.data.get("message") or "").strip()
     agent = CatChatbotAgent()
     reply = agent.get_response(prompt)

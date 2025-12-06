@@ -42,19 +42,49 @@ def list_favorites(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_favorite(request):
-    ser = FavoriteSerializer(data={"shop": request.data.get("shop")})
-    if ser.is_valid():
-        fav, created = Favorite.objects.get_or_create(
-            user=request.user, 
-            shop=ser.validated_data["shop"]
+    payload = request.data
+    shop = None
+    shop_id = payload.get("shop")
+    if shop_id:
+        try:
+            shop = CoffeeShop.objects.get(pk=int(shop_id))
+        except (CoffeeShop.DoesNotExist, ValueError, TypeError):
+            shop = None
+
+    if shop is None:
+        name = (payload.get("name") or "").strip()
+        if not name:
+            return Response({"detail": "shop id or name required"}, status=400)
+        address = (payload.get("address") or "").strip()
+        lat = payload.get("lat")
+        lon = payload.get("lng") or payload.get("lon")
+        tags = payload.get("tags") or []
+        try:
+            lat = float(lat) if lat not in (None, "") else None
+        except (ValueError, TypeError):
+            lat = None
+        try:
+            lon = float(lon) if lon not in (None, "") else None
+        except (ValueError, TypeError):
+            lon = None
+        shop = CoffeeShop.objects.create(
+            name=name,
+            address=address,
+            lat=lat,
+            lon=lon,
+            tags=tags if isinstance(tags, list) else [],
         )
-        if created:
-            Profile.objects.get_or_create(user=request.user)[0].increment_favorite()
-        return Response(
-            FavoriteSerializer(fav).data, 
-            status=201 if created else 200
-        )
-    return Response(ser.errors, status=400)
+
+    fav, created = Favorite.objects.get_or_create(
+        user=request.user,
+        shop=shop,
+    )
+    if created:
+        Profile.objects.get_or_create(user=request.user)[0].increment_favorite()
+    return Response(
+        FavoriteSerializer(fav).data,
+        status=201 if created else 200
+    )
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])

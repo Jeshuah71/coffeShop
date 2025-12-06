@@ -12,6 +12,7 @@ class Profile(models.Model):
     preferred_drink = models.CharField(max_length=120, blank=True)
     journal_count = models.IntegerField(default=0)
     favorite_count = models.IntegerField(default=0)
+    avatar_url = models.URLField(blank=True)
 
     def __str__(self) -> str:  # pragma: no cover - trivial
         return f"Profile for {self.user.username}"

@@ -180,28 +180,25 @@
 
 <section style="margin-top: 1.6rem;">
     <div class="page-header" style="margin-bottom: 0.6rem;">
-        <span class="eyebrow">Nearby picks</span>
-        <h2 style="margin:0;">Coffee shops near you</h2>
-        <p style="margin:0; color:#4a322d;">We’ll use your location if you allow it; otherwise we’ll show curated picks.</p>
+        <span class="eyebrow">Why Coffee Corner</span>
+        <h2 style="margin:0;">Plan, sip, and remember better</h2>
+        <p style="margin:0; color:#4a322d;">Save favorites, track your tastings, and let Catbot guide you to your next cup.</p>
     </div>
-    <div id="nearby-shops" style="display:grid; gap:0.75rem;"></div>
-    <div id="nearby-empty" class="empty-state" style="display:none;">No nearby shops yet. Try enabling location or refreshing.</div>
-</section>
-
-{% if google_maps_api_key %}
-<section style="margin-top: 1.6rem;">
-    <div class="page-header" style="margin-bottom: 0.4rem;">
-        <span class="eyebrow">Map</span>
-        <h2 style="margin:0;">See it on the map</h2>
-    </div>
-    <div style="border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:0 18px 38px rgba(31,23,20,0.12);">
-        <gmpx-api-loader key="{{ google_maps_api_key }}" solution-channel="GMP_CC_home_map"></gmpx-api-loader>
-        <gmp-map id="home-map" map-id="e42fe096fceb3f06ecd9be25" center="37.7749,-122.4194" zoom="13" style="height:320px; width:100%; border:0;">
-            <gmp-advanced-marker></gmp-advanced-marker>
-        </gmp-map>
+    <div style="display:grid; gap:0.8rem;">
+        <div class="hero-card" style="padding:1.1rem;">
+            <strong style="display:block; color:#3a2722; margin-bottom:0.25rem;">Taste log</strong>
+            <p style="margin:0; color:#4a322d;">Capture every latte art and tasting note so you can replay your best pours.</p>
+        </div>
+        <div class="hero-card" style="padding:1.1rem;">
+            <strong style="display:block; color:#3a2722; margin-bottom:0.25rem;">Favorites that follow you</strong>
+            <p style="margin:0; color:#4a322d;">Heart the cafés you love and see them across devices when signed in.</p>
+        </div>
+        <div class="hero-card" style="padding:1.1rem;">
+            <strong style="display:block; color:#3a2722; margin-bottom:0.25rem;">Smart nudges</strong>
+            <p style="margin:0; color:#4a322d;">Mood-based quotes, shop recs, and brewing tips tailored to your day.</p>
+        </div>
     </div>
 </section>
-{% endif %}
 
 <script>
 (function(){
@@ -209,17 +206,23 @@
         happy: [
             "Bright day? Try a citrusy Ethiopian pour-over.",
             "Celebrate with a cortado and a flaky pastry.",
-            "Grab an espresso tonic and find a sunny seat."
+            "Grab an espresso tonic and find a sunny seat.",
+            "Fruity natural beans on V60 keep the sunshine going.",
+            "Treat yourself to an affogato—dessert and espresso in one."
         ],
         neutral: [
             "Start with a slow pour and a calm playlist.",
             "Flat white and a quiet table, steady and smooth.",
-            "Balanced cappuccino, balanced day."
+            "Balanced cappuccino, balanced day.",
+            "Filter first, emails second; set your pace with a mellow brew.",
+            "Split a Chemex with a friend; conversation pairs well with coffee."
         ],
         sad: [
             "Cozy mood calls for a cappuccino and a window seat.",
             "Warm latte, mellow tunes, and a soft chair.",
-            "Treat yourself to a mocha and a calm corner."
+            "Treat yourself to a mocha and a calm corner.",
+            "Honey latte, soft light, and a book can brighten the blues.",
+            "Slow moka pot at home—let the aroma do the cheering."
         ]
     };
     const drinks = [
@@ -235,8 +238,6 @@
     const moodBtn = document.getElementById("mood-refresh");
     const moodFaces = Array.from(document.querySelectorAll(".mood-face"));
     const drinkContainer = document.getElementById("drink-recs");
-    const nearbyEl = document.getElementById("nearby-shops");
-    const nearbyEmpty = document.getElementById("nearby-empty");
     let currentMood = "happy";
 
     function pickQuote(mood, text) {
@@ -276,85 +277,6 @@
             quoteBox.textContent = `“${quote}”`;
         });
     });
-
-    async function loadNearby(lat, lng) {
-        try {
-            const res = await fetch(`/api/shops/?lat=${lat}&lng=${lng}`);
-            if (!res.ok) throw new Error("fail");
-            return await res.json();
-        } catch {
-            return null;
-        }
-    }
-
-    function renderShops(list) {
-        nearbyEl.innerHTML = "";
-        if (!list || !list.length) {
-            nearbyEmpty.style.display = "block";
-            return;
-        }
-        nearbyEmpty.style.display = "none";
-        list.slice(0,5).forEach(shop => {
-            const card = document.createElement("div");
-            card.className = "shop-card";
-            card.innerHTML = `
-                <a href="/places/?q=${encodeURIComponent(shop.name || '')}" style="text-decoration:none; color:inherit;">
-                    <div>
-                        <h3>${shop.name || "Coffee shop"}</h3>
-                        <p>${shop.note || shop.address || "Nearby good coffee"}</p>
-                        <div class="shop-meta">
-                            <span>${shop.distance || ""}</span>
-                            ${shop.tags ? `<span>•</span><span>${shop.tags.join(", ")}</span>` : ""}
-                        </div>
-                    </div>
-                </a>
-                <div class="shop-actions">
-                    <button class="mini-btn" type="button" onclick="window.location.href='/places/?q=${encodeURIComponent(shop.name || '')}'">Details</button>
-                </div>
-            `;
-            nearbyEl.appendChild(card);
-        });
-    }
-
-    function setHomeMap(lat, lng) {
-        const el = document.getElementById("home-map");
-        if (!el || !window.google) return;
-        const trySet = () => {
-            const map = el.innerMap;
-            if (!map) { setTimeout(trySet, 120); return; }
-            const pos = {lat, lng};
-            map.setCenter(pos);
-            map.setZoom(14);
-            const marker = el.querySelector("gmp-advanced-marker");
-            if (marker) marker.position = pos;
-        };
-        trySet();
-    }
-
-    function fallbackShops() {
-        renderShops([
-            {name:"Elm Street Espresso", note:"Dim jazz, good outlets", distance:"0.3 mi", tags:["remote","wifi"]},
-            {name:"Sunrise Roasters", note:"Fast bar, cortado ready", distance:"0.8 mi", tags:["grab"]},
-            {name:"The Lantern", note:"Window seats, pastries", distance:"1.1 mi", tags:["cozy"]},
-            {name:"Third Rail", note:"Open past 10, study safe", distance:"1.4 mi", tags:["late","remote"]},
-        ]);
-    }
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            const data = await loadNearby(pos.coords.latitude, pos.coords.longitude);
-            setHomeMap(pos.coords.latitude, pos.coords.longitude);
-            if (data && Array.isArray(data) && data.length) {
-                renderShops(data);
-            } else {
-                fallbackShops();
-            }
-        }, () => {
-            fallbackShops();
-        });
-    } else {
-        fallbackShops();
-    }
 
     renderDrinks();
 })();
