@@ -1,6 +1,10 @@
-README - Coffee Corner (coffee_compass)
+README - Coffee Corner
 
 Django 5 app for discovering, reviewing, and journaling coffee shops. Serves server-rendered pages for accounts, shops, reviews, journals, and lightweight recommendations (including a TF-IDF “Catbot”).
+
+Project Members:
+- Kerri Jensen (kerrijensen13@gmail.com)
+- Jeshua Herrera (jeshuah024@gmail.com)
 
 Features
 - Public pages: home, places, products, saved, journal, blog, help, contact, get-started, catbot (maps use Google Maps API key).
