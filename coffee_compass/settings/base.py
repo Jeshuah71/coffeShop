@@ -9,8 +9,8 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-# SECURITY WARNING: keep the secret key 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+# SECURITY WARNING: keep the secret key
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-not-secret')
 
 # SECURITY WARNING: don't run with debug turned on
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -128,6 +129,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+_static_root = os.environ.get("STATIC_ROOT", "").strip()
+STATIC_ROOT = Path(_static_root) if _static_root else (BASE_DIR / "staticfiles")
 
 # Google Maps / Places
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
