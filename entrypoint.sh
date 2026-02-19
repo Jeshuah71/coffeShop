@@ -19,8 +19,12 @@ mkdir -p "${STATIC_ROOT}"
 python - <<'PY'
 import os
 from django.conf import settings
+import coffee_compass.settings as s
 print("DJANGO_SETTINGS_MODULE=", os.environ.get("DJANGO_SETTINGS_MODULE"))
-print("STATIC_ROOT setting=", settings.STATIC_ROOT, type(settings.STATIC_ROOT))
+print("ENV STATIC_ROOT=", os.environ.get("STATIC_ROOT"))
+print("settings file=", s.__file__)
+print("module STATIC_ROOT=", getattr(s, "STATIC_ROOT", "MISSING"), type(getattr(s, "STATIC_ROOT", None)))
+print("django settings STATIC_ROOT=", settings.STATIC_ROOT, type(settings.STATIC_ROOT))
 PY
 
 echo "Waiting for Postgres at ${POSTGRES_HOST}:${POSTGRES_PORT} ..."
