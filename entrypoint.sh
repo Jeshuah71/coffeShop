@@ -13,6 +13,15 @@ echo "POSTGRES_DB=${POSTGRES_DB}"
 
 export STATIC_ROOT="${STATIC_ROOT:-/app/staticfiles}"
 echo "STATIC_ROOT=${STATIC_ROOT}"
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-coffee_compass.settings}"
+mkdir -p "${STATIC_ROOT}"
+
+python - <<'PY'
+import os
+from django.conf import settings
+print("DJANGO_SETTINGS_MODULE=", os.environ.get("DJANGO_SETTINGS_MODULE"))
+print("STATIC_ROOT setting=", settings.STATIC_ROOT, type(settings.STATIC_ROOT))
+PY
 
 echo "Waiting for Postgres at ${POSTGRES_HOST}:${POSTGRES_PORT} ..."
 until python - <<'PY'
