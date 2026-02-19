@@ -66,7 +66,8 @@ TIME_ZONE = "America/Denver"
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+_static_root = os.getenv("STATIC_ROOT", "").strip()
+STATIC_ROOT = Path(_static_root) if _static_root else (BASE_DIR / "staticfiles")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- DRF / CORS ---
