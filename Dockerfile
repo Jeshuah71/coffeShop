@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 EXPOSE 8000
-CMD ["/app/entrypoint.sh", "gunicorn", "coffee_compass.wsgi:application", "--bind", "0.0.0.0:${PORT:-8000}"]
+CMD ["bash", "-lc", "/app/entrypoint.sh gunicorn coffee_compass.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
