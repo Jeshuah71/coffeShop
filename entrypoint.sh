@@ -11,6 +11,9 @@ echo "POSTGRES_HOST=${POSTGRES_HOST}"
 echo "POSTGRES_PORT=${POSTGRES_PORT}"
 echo "POSTGRES_DB=${POSTGRES_DB}"
 
+export STATIC_ROOT="${STATIC_ROOT:-/app/staticfiles}"
+echo "STATIC_ROOT=${STATIC_ROOT}"
+
 echo "Waiting for Postgres at ${POSTGRES_HOST}:${POSTGRES_PORT} ..."
 until python - <<'PY'
 import os, socket, sys
