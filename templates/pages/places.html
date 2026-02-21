@@ -136,6 +136,10 @@
     .toast a { color: #ffd7c2; text-decoration: underline; }
     .toast[data-hidden="true"] { display: none; }
     @media (max-width: 960px) { .places-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) {
+        .map-viewport { height: 360px; }
+        .filter-row { grid-template-columns: 1fr; }
+    }
 </style>
 {% endblock %}
 

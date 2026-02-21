@@ -34,6 +34,10 @@
             letter-spacing: 0.01em;
         }
         a { color: inherit; }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
         button, input, select, textarea {
             font-family: inherit;
         }
@@ -281,6 +285,14 @@
             .nav-toggle:checked + .nav-toggle-btn + .primary-nav + .cta-group {
                 display: flex;
             }
+        }
+        @media (max-width: 640px) {
+            .cc-shell { padding: 0 1rem; }
+            .topbar__inner { padding: 0.75rem 1rem; }
+            .logo-text span { display: none; }
+            .page-header { gap: 0.25rem; margin-bottom: 1rem; }
+            .card-grid { grid-template-columns: 1fr; }
+            .cta-group { gap: 0.4rem; }
         }
     </style>
     {% block extra_head %}{% endblock %}

@@ -14,6 +14,7 @@ class SignupTests(TestCase):
         self.assertEqual(resp.status_code, 201)
         user = User.objects.get(email="a@example.com")
         self.assertTrue(user.check_password("pass1234"))
+        self.assertFalse(user.is_active)
         self.assertIsNotNone(Profile.objects.filter(user=user).first())
 
     def test_password_hashing(self):

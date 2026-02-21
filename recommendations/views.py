@@ -7,6 +7,7 @@ from .services import QuoteRecommender
 from .ml_sentiment import SentimentAnalyzer
 from .models import Quote
 from django.http import HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -18,6 +19,7 @@ def recommend(request):
     return Response({"items": items})
 
 
+@csrf_exempt
 @api_view(["POST", "GET"])
 @permission_classes([AllowAny])
 def catbot(request):
