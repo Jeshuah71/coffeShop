@@ -21,6 +21,12 @@ def _send_verification_email(user: User, token_obj: EmailVerificationToken, requ
     api_key = os.getenv("RESEND_API_KEY", "").strip()
     from_email = os.getenv("RESEND_FROM_EMAIL", "").strip()
     if not api_key or not from_email:
+        if settings.DEBUG:
+            verify_url = f"{_app_base_url(request)}/api/auth/verify?token={token_obj.token}"
+            print("\nDEV EMAIL VERIFICATION LINK:")
+            print(verify_url)
+            print()
+            return True
         return False
     verify_url = f"{_app_base_url(request)}/api/auth/verify?token={token_obj.token}"
     subject = "Verify your Coffee Corner account"
