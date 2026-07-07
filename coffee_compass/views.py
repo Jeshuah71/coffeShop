@@ -30,7 +30,7 @@ def places(request):
     if radius_raw is None:
         radius_raw = request.GET.get("miles")
     if radius_raw is None:
-        radius_raw = "10"
+        radius_raw = ""
 
     radius = radius_raw
     radius_val: float | None
@@ -40,8 +40,8 @@ def places(request):
         try:
             radius_val = float(radius_raw)
         except (TypeError, ValueError):
-            radius_val = 10.0
-            radius = "10"
+            radius_val = None
+            radius = ""
     open_now = "open_now" in request.GET
 
     qs = CoffeeShop.objects.all()

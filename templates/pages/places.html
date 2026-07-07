@@ -155,13 +155,13 @@
         <p>Geolocation when permitted; otherwise start from your city query or defaults.</p>
         <div class="map-viewport">
             {% if google_maps_api_key %}
-            <gmpx-api-loader key="{{ google_maps_api_key }}" solution-channel="GMP_CC_places"></gmpx-api-loader>
+            <gmpx-api-loader key="{{ google_maps_api_key }}" solution-channel="GMP_CC_places" libraries="places,geometry,marker"></gmpx-api-loader>
             <gmp-map id="places-map" map-id="e42fe096fceb3f06ecd9be25" center="37.7749,-122.4194" zoom="12" style="height:340px; width:100%; border:0;">
                 <gmp-advanced-marker></gmp-advanced-marker>
             </gmp-map>
-            <div style="position:absolute; top:10px; left:10px; right:10px; display:flex; gap:0.5rem; pointer-events:none;">
+            <!--<div style="position:absolute; top:10px; left:10px; right:10px; display:flex; gap:0.5rem; pointer-events:none;">
                 <gmpx-place-picker style="flex:1;" placeholder="Search address or area"></gmpx-place-picker>
-            </div>
+            </div>-->
             {% else %}
             <div style="padding:1rem; color:#fff;">Google Maps key not configured.</div>
             {% endif %}
@@ -294,6 +294,9 @@
         }
         const radiusMiles = parseFloat(radiusSelect.value || "0") || 0;
         const center = userCenter || searchCenter;
+        // city typed? use that city.
+        // no city typed? use my current location.
+
         if (center) {
             items = items.map(it => {
                 if (typeof it.lat === "number" && typeof it.lng === "number") {
@@ -446,67 +449,95 @@
         const wantOpen = openNowInput ? openNowInput.checked : false;
 
         let center = null;
-        if (cityText) center = await geocodeCity(cityText);
-        if (!center && userCenter) center = userCenter;
-        if (!center) center = await getGeoLocation();
-        if (center && !searchCenter) searchCenter = center;
-        if (center && !userCenter) userCenter = center;
 
-        withMapReady(map => {
-            const service = new google.maps.places.PlacesService(map);
-            const request = {
-                query: [queryText, cityText, "coffee"].filter(Boolean).join(" "),
-                location: center || map.getCenter(),
-                radius: radiusMeters || undefined,
-                keyword: "coffee",
-                type: "cafe",
-                openNow: wantOpen || undefined
-            };
-            service.textSearch(request, (results, status) => {
-                if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
-                    setStatus("No results from Google Places. Try another city or keyword.");
-                    renderList([]);
-                    return;
-                }
-                const items = results.slice(0, 20).map(r => {
-                    const types = Array.isArray(r.types) ? r.types : [];
-                    const tags = [];
-                    if (types.includes("bakery")) tags.push("bakery");
-                    if (types.includes("cafe")) tags.push("cafe");
-                    if (types.includes("restaurant")) tags.push("food");
-                    if (r.rating) tags.push(`★ ${r.rating}`);
-                    let distance = "";
-                    let distVal = null;
-                    if (r.geometry?.location && google.maps.geometry?.spherical) {
-                        const base = userCenter || searchCenter || (center ? { lat: center.lat(), lng: center.lng() } : null);
-                        if (base) {
-                            distVal = google.maps.geometry.spherical.computeDistanceBetween(
-                                new google.maps.LatLng(base.lat, base.lng),
-                                r.geometry.location
-                            ) / 1000;
-                            distance = kmToMiles(distVal);
-                        }
+        if (!userCenter) userCenter = await getGeoLocation();
+
+        if (cityText) {
+            center = await geocodeCity(cityText);
+            searchCenter = center; // used for searching/map bias
+        } else {
+            center = userCenter;
+            searchCenter = center;
+}
+
+        withMapReady(async map => {
+        const { Place } = await google.maps.importLibrary("places");
+
+        const request = {
+            textQuery: [queryText, cityText || "", "coffee"].filter(Boolean).join(" "),
+            fields: ["id", "displayName", "formattedAddress", "location", "rating", "types", "businessStatus"],
+            includedType: "cafe",
+            locationBias: center
+                ? { center: center, radius: radiusMeters || 16093 }
+                : { center: map.getCenter(), radius: radiusMeters || 16093 },
+            maxResultCount: 20,
+            language: "en-US",
+            region: "us"
+        };
+
+        if (wantOpen) request.isOpenNow = true;
+
+        try {
+            const { places } = await Place.searchByText(request);
+
+            if (!places || !places.length) {
+                console.log("Google Places New results:", places);
+                console.log("Google Places New request:", request);
+                setStatus("No results from Google Places.");
+                renderList([]);
+                return;
+            }
+
+            const items = places.map(place => {
+                const types = Array.isArray(place.types) ? place.types : [];
+                const tags = [];
+
+                if (types.includes("bakery")) tags.push("bakery");
+                if (types.includes("cafe")) tags.push("cafe");
+                if (types.includes("restaurant")) tags.push("food");
+                if (place.rating) tags.push(`★ ${place.rating}`);
+
+                let distance = "";
+                let distVal = null;
+
+                if (place.location && google.maps.geometry?.spherical) {
+                    const base = userCenter || searchCenter;
+                    if (base) {
+                        distVal = google.maps.geometry.spherical.computeDistanceBetween(
+                            new google.maps.LatLng(base.lat, base.lng),
+                            place.location
+                        ) / 1000;
+                        distance = kmToMiles(distVal);
                     }
-                    return {
-                        name: r.name,
-                        address: r.formatted_address || "",
-                        lat: r.geometry?.location ? r.geometry.location.lat() : null,
-                        lng: r.geometry?.location ? r.geometry.location.lng() : null,
-                        open_now: r.opening_hours ? (r.opening_hours.isOpen?.() ?? r.opening_hours.open_now) : null,
-                        distance: distance || (miles ? `${miles} mi` : "Distance unavailable"),
-                        _distance_val: distVal ? distVal * 0.621371 : null,
-                        tags,
-                        place_id: r.place_id
-                    };
-                });
-                setStatus("");
-                renderList(items);
-                if (items.length && items[0].lat && items[0].lng) {
-                    map.setCenter({ lat: items[0].lat, lng: items[0].lng });
-                    map.setZoom(13);
                 }
+
+                return {
+                    name: place.displayName || "Coffee shop",
+                    address: place.formattedAddress || "",
+                    lat: place.location ? place.location.lat() : null,
+                    lng: place.location ? place.location.lng() : null,
+                    open_now: place.businessStatus === "OPERATIONAL",
+                    distance: distance || "Distance unavailable",
+                    _distance_val: distVal ? distVal * 0.621371 : null,
+                    tags,
+                    place_id: place.id
+                };
             });
-        });
+
+            setStatus("");
+            renderList(items);
+
+            if (items.length && items[0].lat && items[0].lng) {
+                map.setCenter({ lat: items[0].lat, lng: items[0].lng });
+                map.setZoom(13);
+            }
+        } catch (error) {
+            console.error("Google Places New error:", error);
+            console.log("Google Places New request:", request);
+            setStatus("Google Places search failed. Check console.");
+            renderList([]);
+        }
+    });
     }
 
     // Initial render from server data or fallback.
