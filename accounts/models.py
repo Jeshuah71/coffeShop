@@ -16,9 +16,14 @@ class Profile(models.Model):
     journal_count = models.IntegerField(default=0)
     favorite_count = models.IntegerField(default=0)
     avatar_url = models.URLField(blank=True)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self) -> str:  # pragma: no cover - trivial
         return f"Profile for {self.user.username}"
+
+    @property
+    def is_email_verified(self) -> bool:
+        return self.email_verified_at is not None
 
     def increment_journal(self) -> None:
         self.journal_count = (self.journal_count or 0) + 1
