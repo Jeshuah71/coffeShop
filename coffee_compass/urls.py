@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
-    path("", views.home, name="home"),
+    # Use Places as the landing page instead of 'Home'
+    path("", RedirectView.as_view(pattern_name="places", permanent=False), name="home" ),
     path("places/", views.places, name="places"),
     path("products/", views.products, name="products"),
     path("saved/", views.saved, name="saved"),
